@@ -8,6 +8,7 @@ import {
   inventorySnapshots,
   metrcConnections,
   metrcSyncs,
+  metrcTestResults,
   notificationEvents,
   physicalLogs,
   reconciliationReports,
@@ -45,10 +46,31 @@ export async function upsertUser(user: InsertUser): Promise<void> {
   await database.insert(users).values(values).onDuplicateKeyUpdate({ set: updateSet });
 }
 
+export async function getUserByEmail(email: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(users).where(eq(users.email, email)).limit(1);
+  return result[0];
+}
+
+export async function createLocalUser(input: { email: string; name: string; passwordHash: string }) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not available");
+  const openId = `local:${input.email}`;
+  await db.insert(users).values({
+    openId,
+    name: input.name,
+    email: input.email,
+    passwordHash: input.passwordHash,
+    loginMethod: "password",
+  });
+  return getUserByOpenId(openId);
+}
+
 export async function getUserByOpenId(openId: string) {
-  const database = await getDb();
-  if (!database) return undefined;
-  return (await database.select().from(users).where(eq(users.openId, openId)).limit(1))[0];
+  const db = await getDb();
+  if (!db) return undefined;
+  return (await db.select().from(users).where(eq(users.openId, openId)).limit(1))[0];
 }
 
 export async function ensureFacilityForUser(userId: number) {
@@ -114,6 +136,11 @@ export async function setConnectionStatus(facilityId: number, status: "connected
   }).where(eq(metrcConnections.facilityId, facilityId));
 }
 
+export async function getRunningSync(facilityId: number) {
+  const database = await requireDb();
+  return (await database.select().from(metrcSyncs).where(and(eq(metrcSyncs.facilityId, facilityId), eq(metrcSyncs.status, "running"))).orderBy(desc(metrcSyncs.startedAt)).limit(1))[0];
+}
+
 export async function createSync(facilityId: number, trigger: "manual" | "scheduled") {
   const database = await requireDb();
   const result = await database.insert(metrcSyncs).values({ facilityId, trigger, status: "running" });
@@ -136,6 +163,14 @@ export async function upsertInventorySnapshots(facilityId: number, records: Arra
     await database.insert(inventorySnapshots).values({ facilityId, ...record, quantity: String(record.quantity) })
       .onDuplicateKeyUpdate({ set: { packageLabel: record.packageLabel, productName: record.productName, sku: record.sku, quantity: String(record.quantity), unitOfMeasure: record.unitOfMeasure, testingStatus: record.testingStatus, sourceLastModifiedAt: record.sourceLastModifiedAt, capturedAt: new Date() } });
   }
+}
+
+export async function upsertMetrcTestResults(facilityId: number, records: Array<{ metrcPackageId: string; testStatus: string; receivedAt: Date | null; sourceLastModifiedAt: Date | null; rawPayload: string }>) {
+  const database = await requireDb();
+  for (const record of records) {
+    await database.insert(metrcTestResults).values({ facilityId, ...record }).onDuplicateKeyUpdate({ set: { testStatus: record.testStatus, receivedAt: record.receivedAt, sourceLastModifiedAt: record.sourceLastModifiedAt, rawPayload: record.rawPayload, capturedAt: new Date() } });
+  }
+  return records.length;
 }
 
 export async function listInventory(facilityId: number) {
@@ -225,17 +260,25 @@ export async function updateNotificationStatus(id: number, status: "sent" | "fai
 
 export async function getDashboardData(facilityId: number) {
   const database = await requireDb();
-  const [connection, inventory, allDiscrepancies, reports] = await Promise.all([
+  const trendSince = new Date(); trendSince.setDate(trendSince.getDate() - 6);
+  const [connection, inventory, allDiscrepancies, reports, syncHistory] = await Promise.all([
     getMetrcConnection(facilityId),
     listInventory(facilityId),
     listDiscrepancies(facilityId),
     database.select().from(reconciliationReports).where(eq(reconciliationReports.facilityId, facilityId)).orderBy(desc(reconciliationReports.createdAt)).limit(1),
+    database.select().from(metrcSyncs).where(and(eq(metrcSyncs.facilityId, facilityId), eq(metrcSyncs.status, "success"), gte(metrcSyncs.startedAt, trendSince))).orderBy(metrcSyncs.startedAt),
   ]);
   const active = allDiscrepancies.filter(item => item.status !== "resolved");
   const severities = { critical: active.filter(item => item.severity === "critical").length, high: active.filter(item => item.severity === "high").length, medium: active.filter(item => item.severity === "medium").length };
   const since = new Date(); since.setDate(since.getDate() - 7);
   const reconciled = await database.select({ count: sql<number>`count(*)` }).from(physicalLogs).where(and(eq(physicalLogs.facilityId, facilityId), eq(physicalLogs.type, "count"), gte(physicalLogs.occurredAt, since)));
-  return { connection, products: inventory.length, discrepancies: active, severities, reconciledThisWeek: Number(reconciled[0]?.count ?? 0), latestReport: reports[0] ?? null };
+  const trend = Array.from({ length: 7 }, (_, index) => {
+    const date = new Date(trendSince); date.setDate(trendSince.getDate() + index);
+    const key = date.toISOString().slice(0, 10);
+    const sync = syncHistory.filter(item => item.startedAt.toISOString().slice(0, 10) === key);
+    return { day: date.toLocaleDateString("en-US", { weekday: "short" }), count: sync.reduce((total, item) => total + item.inventoryItems, 0), syncs: sync.length };
+  });
+  return { connection, products: inventory.length, discrepancies: active, severities, reconciledThisWeek: Number(reconciled[0]?.count ?? 0), latestReport: reports[0] ?? null, trend };
 }
 
 export async function createReport(facilityId: number, user: { id: number; name: string | null }, startDate: Date, endDate: Date) {

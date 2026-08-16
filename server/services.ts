@@ -1,6 +1,6 @@
 import type { MetrcConnection } from "../drizzle/schema";
 import * as db from "./db";
-import { fetchMetrcInventory, fetchMetrcSalesCount, testMetrcConnection } from "./metrc";
+import { countTestingRecords, fetchMetrcInventory, fetchMetrcSalesCount, fetchMetrcTestingResults, testMetrcConnection } from "./metrc";
 import { emailDeliveryReady, sendComplianceAlert } from "./notifications";
 import { calculateReconciliation, getAuditRisk } from "./reconciliation";
 
@@ -80,19 +80,26 @@ async function queueNotifications(facilityId: number, newIssues: Awaited<ReturnT
 export async function runMetrcSync(facilityId: number, trigger: "manual" | "scheduled") {
   const connection = await db.getMetrcConnection(facilityId);
   if (!connection) throw new Error("No Metrc connection is configured for this facility.");
+  const running = await db.getRunningSync(facilityId);
+  if (running) return { inventoryItems: 0, salesRecords: 0, discrepancies: 0, skipped: "already_running" as const };
   const syncId = await db.createSync(facilityId, trigger);
   try {
     const before = await db.getDashboardData(facilityId);
     const priorRisk = getAuditRisk(before.severities);
     const inventory = await fetchMetrcInventory(connection as MetrcConnection, connection.lastSyncedAt);
-    const salesCount = await fetchMetrcSalesCount(connection as MetrcConnection);
+    const [salesCount, testingResults] = await Promise.all([
+      fetchMetrcSalesCount(connection as MetrcConnection),
+      fetchMetrcTestingResults(connection as MetrcConnection, connection.lastSyncedAt),
+    ]);
+    const testingCount = testingResults.length || countTestingRecords(inventory);
     await db.upsertInventorySnapshots(facilityId, inventory);
+    await db.upsertMetrcTestResults(facilityId, testingResults);
     const newIssues = await reconcileFacility(facilityId);
     await db.setConnectionStatus(facilityId, "connected", { synced: true });
-    await db.finishSync(syncId, { status: "success", inventoryItems: inventory.length, salesRecords: salesCount, testRecords: inventory.filter(item => item.testingStatus !== "Unknown").length });
+    await db.finishSync(syncId, { status: "success", inventoryItems: inventory.length, salesRecords: salesCount, testRecords: testingCount });
     const after = await db.getDashboardData(facilityId);
     await queueNotifications(facilityId, newIssues, priorRisk.level !== "red" && getAuditRisk(after.severities).level === "red");
-    return { inventoryItems: inventory.length, salesRecords: salesCount, discrepancies: newIssues.length };
+    return { inventoryItems: inventory.length, salesRecords: salesCount, testRecords: testingCount, discrepancies: newIssues.length, skipped: false as const };
   } catch (error) {
     const message = error instanceof Error ? error.message : "Metrc synchronization failed.";
     await db.setConnectionStatus(facilityId, "error");

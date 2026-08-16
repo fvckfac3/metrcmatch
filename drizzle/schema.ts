@@ -17,6 +17,7 @@ export const users = mysqlTable("users", {
   openId: varchar("openId", { length: 64 }).notNull().unique(),
   name: text("name"),
   email: varchar("email", { length: 320 }),
+  passwordHash: varchar("passwordHash", { length: 255 }),
   loginMethod: varchar("loginMethod", { length: 64 }),
   role: mysqlEnum("role", ["user", "admin"]).default("user").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
@@ -114,6 +115,24 @@ export const inventorySnapshots = mysqlTable(
   table => [
     uniqueIndex("inventorySnapshots_facility_package_unique").on(table.facilityId, table.metrcPackageId),
     index("inventorySnapshots_facility_product_idx").on(table.facilityId, table.productName),
+  ]
+);
+
+export const metrcTestResults = mysqlTable(
+  "metrcTestResults",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    facilityId: int("facilityId").notNull(),
+    metrcPackageId: varchar("metrcPackageId", { length: 128 }).notNull(),
+    testStatus: varchar("testStatus", { length: 100 }).notNull(),
+    receivedAt: timestamp("receivedAt"),
+    sourceLastModifiedAt: timestamp("sourceLastModifiedAt"),
+    rawPayload: text("rawPayload"),
+    capturedAt: timestamp("capturedAt").defaultNow().notNull(),
+  },
+  table => [
+    uniqueIndex("metrcTestResults_facility_package_unique").on(table.facilityId, table.metrcPackageId),
+    index("metrcTestResults_facility_modified_idx").on(table.facilityId, table.sourceLastModifiedAt),
   ]
 );
 
@@ -222,5 +241,6 @@ export type InsertUser = typeof users.$inferInsert;
 export type Facility = typeof facilities.$inferSelect;
 export type MetrcConnection = typeof metrcConnections.$inferSelect;
 export type InventorySnapshot = typeof inventorySnapshots.$inferSelect;
+export type MetrcTestResult = typeof metrcTestResults.$inferSelect;
 export type PhysicalLog = typeof physicalLogs.$inferSelect;
 export type Discrepancy = typeof discrepancies.$inferSelect;
