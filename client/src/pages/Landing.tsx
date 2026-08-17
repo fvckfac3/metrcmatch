@@ -1,4 +1,10 @@
 import { useAuth } from "@/_core/hooks/useAuth";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { startLogin } from "@/const";
 import {
@@ -62,6 +68,29 @@ const workflow = [
   ],
 ];
 
+const faqItems = [
+  {
+    question: "Which point-of-sale systems does MetrcMatch support?",
+    answer:
+      "MetrcMatch currently connects directly to Oregon Metrc. POS connector support is planned and is not presented as a live integration until it is available.",
+  },
+  {
+    question: "How does setup work for an Oregon facility?",
+    answer:
+      "A manager creates the facility workspace, enters the facility’s Metrc connection details, runs a connection check, and syncs available package data before recording physical counts and exceptions.",
+  },
+  {
+    question: "How is facility and Metrc data handled?",
+    answer:
+      "Metrc connection credentials are encrypted before storage, and workspace actions are scoped to the signed-in facility. Facility staff remain responsible for validating records and completing required reporting.",
+  },
+  {
+    question: "What happens when Metrc and a physical count differ?",
+    answer:
+      "MetrcMatch compares the latest synced quantity with the latest physical count and flags a discrepancy when the variance exceeds five units or five percent. Managers can log likely causes, investigate, resolve, and export reconciliation evidence.",
+  },
+];
+
 export default function Landing() {
   const { user, loading } = useAuth();
   const [, setLocation] = useLocation();
@@ -80,6 +109,7 @@ export default function Landing() {
         <div className="mx-auto flex h-18 max-w-7xl items-center justify-between px-5 sm:px-8">
           <button
             onClick={() => setLocation("/")}
+            aria-label="MetrcMatch home"
             className="flex items-center gap-3 rounded-xl text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5e8b62]"
           >
             <span className="grid h-10 w-10 place-items-center rounded-2xl bg-[#173f3a] text-white shadow-[0_8px_20px_rgba(23,63,58,0.18)]">
@@ -95,14 +125,29 @@ export default function Landing() {
             </span>
           </button>
           <nav className="hidden items-center gap-7 text-sm font-semibold text-[#5b6d63] md:flex">
-            <a href="#how-it-works" className="hover:text-[#173f3a]">
+            <a
+              href="#how-it-works"
+              className="rounded-md hover:text-[#173f3a] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5e8b62]"
+            >
               Workflow
             </a>
-            <a href="#features" className="hover:text-[#173f3a]">
+            <a
+              href="#features"
+              className="rounded-md hover:text-[#173f3a] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5e8b62]"
+            >
               Capabilities
             </a>
-            <a href="#proof" className="hover:text-[#173f3a]">
+            <a
+              href="#proof"
+              className="rounded-md hover:text-[#173f3a] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5e8b62]"
+            >
               Customer proof
+            </a>
+            <a
+              href="#faq"
+              className="rounded-md hover:text-[#173f3a] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5e8b62]"
+            >
+              FAQ
             </a>
           </nav>
           <div className="flex items-center gap-2">
@@ -361,6 +406,49 @@ export default function Landing() {
           </div>
         </section>
 
+        <section id="faq" className="border-y border-[#d9e6d8] bg-[#eaf3e8]">
+          <div className="mx-auto grid max-w-7xl gap-10 px-5 py-20 sm:px-8 lg:grid-cols-[0.75fr_1.25fr] lg:gap-16">
+            <div>
+              <p className="text-sm font-bold text-[#356e45]">
+                Before you connect
+              </p>
+              <h2 className="mt-3 text-3xl font-extrabold tracking-[-0.04em] sm:text-4xl">
+                Practical answers for Oregon operators.
+              </h2>
+              <p className="mt-4 max-w-md text-sm leading-6 text-[#5e7363]">
+                The product supports reconciliation activity, with a clear
+                boundary between what the workspace automates and what facility
+                teams remain responsible for verifying.
+              </p>
+              <Button
+                onClick={openWorkspace}
+                disabled={loading}
+                variant="outline"
+                className="mt-7 border-[#9abb99] bg-white/75 text-[#205b35] hover:bg-white"
+              >
+                {user ? "Open workspace" : "Start your free audit"}
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </div>
+            <Accordion
+              type="single"
+              collapsible
+              className="rounded-[1.75rem] border border-[#d3e1d2] bg-white/85 px-5 shadow-[0_14px_32px_rgba(23,63,58,0.045)] sm:px-7"
+            >
+              {faqItems.map(item => (
+                <AccordionItem key={item.question} value={item.question}>
+                  <AccordionTrigger className="py-5 text-left text-base font-bold text-[#173f3a] hover:no-underline">
+                    {item.question}
+                  </AccordionTrigger>
+                  <AccordionContent className="pb-5 text-sm leading-6 text-[#61766a]">
+                    {item.answer}
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
+          </div>
+        </section>
+
         <section className="px-5 pb-20 sm:px-8">
           <div className="relative mx-auto max-w-7xl overflow-hidden rounded-[2rem] bg-[#173f3a] px-7 py-12 text-white shadow-[0_24px_55px_rgba(23,63,58,0.2)] sm:px-12">
             <div
@@ -410,7 +498,7 @@ export default function Landing() {
           </p>
           <button
             onClick={openWorkspace}
-            className="font-semibold text-[#356e45] hover:underline"
+            className="rounded-md font-semibold text-[#356e45] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5e8b62]"
           >
             {user ? "Open workspace" : "Sign in to workspace"}
           </button>

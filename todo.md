@@ -81,9 +81,9 @@
 - [x] Use a labeled customer-proof placeholder instead of unverified testimonials or attributed savings/compliance claims.
 - [x] Avoid claiming current POS integration until a POS connector is implemented; present it as a planned integration capability.
 - [x] Verify responsive landing-page layout, primary CTAs, and accessibility, then save a checkpoint.
-- [ ] Add an FAQ teaser section covering POS compatibility, setup, data security, and discrepancy workflow.
-- [ ] Verify keyboard focus order and CTA accessibility on the landing page, then save the landing checkpoint.
-- [ ] Add the public landing-page FAQ teaser and complete landing-page accessibility verification.
+- [x] Add an FAQ teaser section covering POS compatibility, setup, data security, and discrepancy workflow.
+- [x] Verify keyboard focus order and CTA accessibility on the landing page, then save the landing checkpoint.
+- [x] Add the public landing-page FAQ teaser and complete landing-page accessibility verification.
 - [x] Configure Starter at $149/month, Growth at $349/month, and Enterprise contact-sales billing options.
 - [x] Require a payment card for a 14-day trial while deferring the first charge until the trial expires.
 - [x] Model facility-scoped subscription status, plan, trial, and entitlement limits.
