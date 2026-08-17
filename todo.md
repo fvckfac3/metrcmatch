@@ -97,6 +97,6 @@
 - [x] Write a comprehensive README covering product scope, architecture, setup, configuration, billing, testing, operations, and deployment guidance.
 - [x] Add a proprietary private-use license and reference it from the project documentation.
 - [x] Reconcile package metadata and repository references with the proprietary private-use license.
-- [ ] Validate the documentation and push the README/license update to the private GitHub repository.
+- [x] Validate the documentation and push the README/license update to the private GitHub repository.
 - [x] Draft standard Terms of Service and Privacy Policy documents appropriate to MetrcMatch’s data and billing flows.
-- [ ] Add public in-application links to the Terms of Service and Privacy Policy, then validate and push the complete documentation update.
+- [x] Add public in-application links to the Terms of Service and Privacy Policy, then validate and push the complete documentation update.
