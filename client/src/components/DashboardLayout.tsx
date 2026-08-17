@@ -60,9 +60,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   if (loading) return <DashboardLayoutSkeleton />;
   if (!user) {
     return (
-      <div className="grid min-h-screen place-items-center bg-[#f5f7f3] p-6">
-        <div className="w-full max-w-md rounded-3xl border border-[#dce3da] bg-white p-8 shadow-[0_18px_70px_rgba(18,53,47,0.10)]">
-          <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-2xl bg-[#173f3a] text-white"><ShieldCheck className="h-6 w-6" /></div>
+      <div className="ambient-grid grid min-h-screen place-items-center bg-[#f1f5ef] p-6">
+        <div className="command-surface motion-rise w-full max-w-md rounded-[2rem] border border-[#dce3da] bg-white p-8 shadow-[0_22px_80px_rgba(18,53,47,0.12)]">
+          <div className="mb-6 flex h-12 w-12 rotate-[-4deg] items-center justify-center rounded-2xl bg-[#173f3a] text-white shadow-[0_10px_22px_rgba(23,63,58,0.24)]"><ShieldCheck className="h-6 w-6 rotate-[4deg]" /></div>
           <h1 className="text-2xl font-semibold tracking-tight text-[#173f3a]">Secure reconciliation workspace</h1>
           <p className="mt-3 text-sm leading-6 text-[#61706b]">Sign in to manage facility inventory records, physical counts, and reconciliation reports.</p>
           <Button onClick={() => startLogin()} size="lg" className="mt-7 w-full bg-[#173f3a] hover:bg-[#0e2f2b]">Sign in to MetrcMatch</Button>
@@ -116,7 +116,7 @@ function DashboardLayoutContent({ children, setSidebarWidth, memberRole }: { chi
   return (
     <>
       <div className="relative" ref={sidebarRef}>
-        <Sidebar collapsible="icon" className="border-r border-[#dce3da] bg-[#fbfcfa]" disableTransition={isResizing}>
+        <Sidebar collapsible="icon" className="border-r border-[#dce3da] bg-[#fbfcfa]/95 backdrop-blur-xl" disableTransition={isResizing}>
           <SidebarHeader className="h-[76px] justify-center px-3">
             <div className="flex items-center gap-3">
               <button onClick={toggleSidebar} aria-label="Toggle navigation" className="grid h-9 w-9 shrink-0 place-items-center rounded-xl text-[#61706b] transition-colors hover:bg-[#eaf0e9] hover:text-[#173f3a] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5e8b62]">
@@ -127,10 +127,10 @@ function DashboardLayoutContent({ children, setSidebarWidth, memberRole }: { chi
           </SidebarHeader>
           <SidebarContent className="px-2 pt-3">
             {!isCollapsed && <p className="px-3 pb-2 text-[10px] font-bold uppercase tracking-[0.16em] text-[#91a09a]">Compliance workspace</p>}
-            <SidebarMenu className="gap-1">
+            <SidebarMenu className="gap-1.5">
               {menuItems.map(item => {
                 const active = location === item.path;
-                return <SidebarMenuItem key={item.path}><SidebarMenuButton isActive={active} onClick={() => setLocation(item.path)} tooltip={item.label} className="h-11 rounded-xl px-3 text-[#52625d] data-[active=true]:bg-[#dfeee0] data-[active=true]:text-[#173f3a] data-[active=true]:shadow-none"><item.icon className="h-[18px] w-[18px]" /><span className="font-medium">{item.label}</span></SidebarMenuButton></SidebarMenuItem>;
+                return <SidebarMenuItem key={item.path}><SidebarMenuButton isActive={active} onClick={() => setLocation(item.path)} tooltip={item.label} className="surface-lift h-11 rounded-xl px-3 text-[#52625d] data-[active=true]:bg-[#dfeee0] data-[active=true]:text-[#173f3a] data-[active=true]:shadow-[inset_3px_0_0_#356e45,0_6px_16px_rgba(18,53,47,0.05)]"><item.icon className="h-[18px] w-[18px]" /><span className="font-medium">{item.label}</span></SidebarMenuButton></SidebarMenuItem>;
               })}
             </SidebarMenu>
           </SidebarContent>
@@ -144,9 +144,10 @@ function DashboardLayoutContent({ children, setSidebarWidth, memberRole }: { chi
         </Sidebar>
         {!isCollapsed && <div className="absolute right-0 top-0 z-50 h-full w-1 cursor-col-resize hover:bg-[#5e8b62]/25" onMouseDown={() => setIsResizing(true)} />}
       </div>
-      <SidebarInset className="bg-[#f5f7f3]">
-        {isMobile && <div className="sticky top-0 z-40 flex h-16 items-center gap-3 border-b border-[#dce3da] bg-[#fbfcfa]/95 px-3 backdrop-blur"><SidebarTrigger className="h-9 w-9 rounded-xl" /><div><p className="text-sm font-semibold text-[#173f3a]">MetrcMatch</p><p className="text-xs text-[#7d8a84]">{activeMenuItem?.label ?? "Workspace"}</p></div></div>}
-        <main className="min-h-screen flex-1 p-4 sm:p-6 lg:p-8">{children}</main>
+      <SidebarInset className="relative overflow-hidden bg-[#f1f5ef]">
+        <div aria-hidden className="ambient-orbit ambient-orbit-one" /><div aria-hidden className="ambient-orbit ambient-orbit-two" /><div aria-hidden className="ambient-grid pointer-events-none absolute inset-0 opacity-50" />
+        {isMobile && <div className="sticky top-0 z-40 flex h-16 items-center gap-3 border-b border-[#dce3da] bg-[#fbfcfa]/90 px-3 backdrop-blur-xl"><SidebarTrigger className="h-9 w-9 rounded-xl" /><div><p className="text-sm font-semibold text-[#173f3a]">MetrcMatch</p><p className="text-xs text-[#7d8a84]">{activeMenuItem?.label ?? "Workspace"}</p></div></div>}
+        <main className="relative z-10 min-h-screen flex-1 p-4 sm:p-6 lg:p-8">{children}</main>
       </SidebarInset>
     </>
   );

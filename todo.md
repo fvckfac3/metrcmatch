@@ -62,3 +62,9 @@
 - [x] Implement CSV export with the same report sections and line-item detail.
 - [x] Add authenticated `GET /api/reports/generate` with `start_date`, `end_date`, and `format=pdf|csv` query parameters.
 - [x] Add report endpoint and renderer tests, verify output headers/content, run type checks, and save a checkpoint.
+- [x] Establish a distinctive compliance command-center visual system using existing shadcn primitives and stronger semantic tokens.
+- [x] Refine typography, spacing, surfaces, borders, and status treatments for clearer hierarchy.
+- [x] Add purposeful motion for page entrances, cards, buttons, drawers, and chart/list transitions with reduced-motion support.
+- [x] Add restrained depth/3D cues where they improve orientation without reducing audit readability.
+- [x] Refine dashboard, physical logging, discrepancy, settings, and report page interactions and empty states.
+- [x] Verify key routes at desktop and mobile sizes, then save a visual refinement checkpoint.
