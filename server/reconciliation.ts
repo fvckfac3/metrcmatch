@@ -5,6 +5,7 @@ export type ReconciliationInput = {
   physicalQuantity: number | null;
   testingStatus: string;
   hasRecentDamage: boolean;
+  hasRecentSale?: boolean;
 };
 
 export type ReconciliationResult = {
@@ -32,11 +33,13 @@ export function calculateReconciliation(input: ReconciliationInput): Reconciliat
     : Number((Math.abs(varianceQuantity) / Math.abs(input.metrcQuantity) * 100).toFixed(2));
   const requiresAttention = Math.abs(varianceQuantity) > 5 || variancePercent > 5;
   const normalizedTesting = input.testingStatus.toLowerCase();
-  const likelyCause = normalizedTesting.includes("pending") || normalizedTesting.includes("not submitted")
-    ? "Testing pending"
+  const likelyCause = normalizedTesting.includes("pending") || normalizedTesting.includes("not submitted") || normalizedTesting.includes("awaiting")
+    ? "Testing delay"
     : input.hasRecentDamage
-      ? "Damage logged but not yet reflected in Metrc"
-      : "Recent sale or data-entry timing difference";
+      ? "Damage logged"
+      : input.hasRecentSale
+        ? "Recent sale"
+        : "Recent sale or data-entry timing difference";
 
   if (!requiresAttention) {
     return { requiresAttention, varianceQuantity, variancePercent, severity: null, likelyCause };
@@ -44,6 +47,31 @@ export function calculateReconciliation(input: ReconciliationInput): Reconciliat
 
   const severity: DiscrepancySeverity = variancePercent > 20 ? "critical" : variancePercent > 10 ? "high" : "medium";
   return { requiresAttention, varianceQuantity, variancePercent, severity, likelyCause };
+}
+
+export type ReconciliationProduct = {
+  id: number;
+  metrcPackageId: string;
+  productName: string;
+  sku: string | null;
+  quantity: number | string;
+  testingStatus: string;
+};
+
+export type ReconciliationCount = { quantity: number | string | null };
+
+export function detectDiscrepancies(products: ReconciliationProduct[], latestCounts: Map<string, ReconciliationCount>, recentDamage: Set<string>, hasRecentSale = false) {
+  return products.map(product => {
+    const latestCount = latestCounts.get(product.metrcPackageId);
+    const result = calculateReconciliation({
+      metrcQuantity: Number(product.quantity),
+      physicalQuantity: latestCount?.quantity === null || latestCount?.quantity === undefined ? null : Number(latestCount.quantity),
+      testingStatus: product.testingStatus,
+      hasRecentDamage: recentDamage.has(product.metrcPackageId),
+      hasRecentSale,
+    });
+    return { product, result, physicalQuantity: latestCount?.quantity === null || latestCount?.quantity === undefined ? null : Number(latestCount.quantity) };
+  }).filter(item => item.result.requiresAttention);
 }
 
 export function getAuditRisk(counts: { critical: number; high: number; medium: number }) {

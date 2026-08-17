@@ -46,3 +46,8 @@
 - [x] Add clear submitting, success confirmation, and error states without inventing product data.
 - [x] Add Vitest coverage for the log endpoint and validation contract.
 - [x] Verify the logging UI at desktop and mobile viewports, then save a checkpoint.
+- [x] Implement a deterministic per-product comparison of latest Metrc quantity versus latest physical count.
+- [x] Flag discrepancies when variance exceeds 5 units or 5 percent and suggest testing delay, recent sale, damage logged, or no count causes.
+- [x] Persist detected discrepancy results and clear resolved variances safely.
+- [x] Add authenticated `GET /api/discrepancies/list` with facility scoping and status/severity filters.
+- [x] Add discrepancy engine and endpoint tests, run type checks, and save a checkpoint.

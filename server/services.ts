@@ -2,7 +2,7 @@ import type { MetrcConnection } from "../drizzle/schema";
 import * as db from "./db";
 import { countTestingRecords, fetchMetrcInventory, fetchMetrcSalesCount, fetchMetrcTestingResults, testMetrcConnection } from "./metrc";
 import { emailDeliveryReady, sendComplianceAlert } from "./notifications";
-import { calculateReconciliation, getAuditRisk } from "./reconciliation";
+import { detectDiscrepancies, getAuditRisk } from "./reconciliation";
 
 export async function testConnectionForFacility(facilityId: number) {
   const connection = await db.getMetrcConnection(facilityId);
@@ -17,35 +17,28 @@ export async function testConnectionForFacility(facilityId: number) {
   }
 }
 
-export async function reconcileFacility(facilityId: number) {
+export async function reconcileFacility(facilityId: number, hasRecentSale = false) {
   const [inventory, logState] = await Promise.all([db.listInventory(facilityId), db.latestLogsByPackage(facilityId)]);
   const detected: Array<{ id: number; severity: "critical" | "high" | "medium"; isNew: boolean }> = [];
-  for (const item of inventory) {
-    const latestCount = logState.latestCounts.get(item.metrcPackageId);
-    const result = calculateReconciliation({
-      metrcQuantity: Number(item.quantity),
-      physicalQuantity: latestCount?.quantity === null || latestCount?.quantity === undefined ? null : Number(latestCount.quantity),
-      testingStatus: item.testingStatus,
-      hasRecentDamage: logState.recentDamage.has(item.metrcPackageId),
-    });
-    if (result.requiresAttention && result.severity) {
-      detected.push(await db.upsertDiscrepancy({
-        facilityId,
-        inventorySnapshotId: item.id,
-        metrcPackageId: item.metrcPackageId,
-        productName: item.productName,
-        sku: item.sku,
-        metrcQuantity: Number(item.quantity),
-        physicalQuantity: latestCount?.quantity === null || latestCount?.quantity === undefined ? null : Number(latestCount.quantity),
-        varianceQuantity: result.varianceQuantity,
-        variancePercent: result.variancePercent,
-        severity: result.severity,
-        likelyCause: result.likelyCause,
-      }));
-    } else {
-      await db.resolveClearedDiscrepancy(facilityId, item.metrcPackageId);
-    }
+  const findings = detectDiscrepancies(inventory.map(item => ({ id: item.id, metrcPackageId: item.metrcPackageId, productName: item.productName, sku: item.sku, quantity: item.quantity, testingStatus: item.testingStatus })), logState.latestCounts, logState.recentDamage, hasRecentSale);
+  const findingPackages = new Set(findings.map(finding => finding.product.metrcPackageId));
+  for (const finding of findings) {
+    if (!finding.result.severity) continue;
+    detected.push(await db.upsertDiscrepancy({
+      facilityId,
+      inventorySnapshotId: finding.product.id,
+      metrcPackageId: finding.product.metrcPackageId,
+      productName: finding.product.productName,
+      sku: finding.product.sku,
+      metrcQuantity: Number(finding.product.quantity),
+      physicalQuantity: finding.physicalQuantity,
+      varianceQuantity: finding.result.varianceQuantity,
+      variancePercent: finding.result.variancePercent,
+      severity: finding.result.severity,
+      likelyCause: finding.result.likelyCause,
+    }));
   }
+  for (const item of inventory) if (!findingPackages.has(item.metrcPackageId)) await db.resolveClearedDiscrepancy(facilityId, item.metrcPackageId);
   return detected;
 }
 
@@ -94,7 +87,7 @@ export async function runMetrcSync(facilityId: number, trigger: "manual" | "sche
     const testingCount = testingResults.length || countTestingRecords(inventory);
     await db.upsertInventorySnapshots(facilityId, inventory);
     await db.upsertMetrcTestResults(facilityId, testingResults);
-    const newIssues = await reconcileFacility(facilityId);
+    const newIssues = await reconcileFacility(facilityId, salesCount > 0);
     await db.setConnectionStatus(facilityId, "connected", { synced: true });
     await db.finishSync(syncId, { status: "success", inventoryItems: inventory.length, salesRecords: salesCount, testRecords: testingCount });
     const after = await db.getDashboardData(facilityId);
