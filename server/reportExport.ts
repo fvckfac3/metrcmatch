@@ -2,7 +2,11 @@ import type { Express, Request, Response } from "express";
 import PDFDocument from "pdfkit";
 import { z } from "zod";
 import * as db from "./db";
-import { ApiError, requireFacilityContext, sendRouteError } from "./http";
+import {
+  ApiError,
+  requireEntitledFacilityContext,
+  sendRouteError,
+} from "./http";
 
 const generateQuerySchema = z.object({
   start_date: z
@@ -168,7 +172,7 @@ function sendReport(
 export function registerReportExportRoutes(app: Express) {
   app.get("/api/reports/generate", async (req, res) => {
     try {
-      const { user, facility } = await requireFacilityContext(
+      const { user, facility } = await requireEntitledFacilityContext(
         req,
         "User session required"
       );
@@ -193,7 +197,7 @@ export function registerReportExportRoutes(app: Express) {
 
   app.get("/api/reports/export", async (req: Request, res: Response) => {
     try {
-      const { facility } = await requireFacilityContext(
+      const { facility } = await requireEntitledFacilityContext(
         req,
         "User session required"
       );

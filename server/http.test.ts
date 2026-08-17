@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { z } from "zod";
 import { ApiError, sendRouteError } from "./http";
 
@@ -12,6 +12,8 @@ function responseMock() {
 }
 
 describe("sendRouteError", () => {
+  afterEach(() => vi.restoreAllMocks());
+
   it("preserves explicit API errors with stable status and code", () => {
     const response = responseMock();
     sendRouteError(
@@ -56,6 +58,7 @@ describe("sendRouteError", () => {
 
   it("does not expose internal error details in generic server responses", () => {
     const response = responseMock();
+    vi.spyOn(console, "error").mockImplementation(() => undefined);
     sendRouteError(
       response as never,
       new Error("database connection string leaked"),

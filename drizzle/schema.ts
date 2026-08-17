@@ -25,19 +25,47 @@ export const users = mysqlTable("users", {
   lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),
 });
 
-export const facilities = mysqlTable("facilities", {
-  id: int("id").autoincrement().primaryKey(),
-  name: varchar("name", { length: 255 }).notNull(),
-  licenseNumber: varchar("licenseNumber", { length: 100 }),
-  address: varchar("address", { length: 500 }),
-  timezone: varchar("timezone", { length: 64 })
-    .default("America/Los_Angeles")
-    .notNull(),
-  complianceManagerEmail: varchar("complianceManagerEmail", { length: 320 }),
-  onboardingComplete: boolean("onboardingComplete").default(false).notNull(),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-});
+export const facilities = mysqlTable(
+  "facilities",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    name: varchar("name", { length: 255 }).notNull(),
+    licenseNumber: varchar("licenseNumber", { length: 100 }),
+    address: varchar("address", { length: 500 }),
+    timezone: varchar("timezone", { length: 64 })
+      .default("America/Los_Angeles")
+      .notNull(),
+    complianceManagerEmail: varchar("complianceManagerEmail", { length: 320 }),
+    onboardingComplete: boolean("onboardingComplete").default(false).notNull(),
+    stripeCustomerId: varchar("stripeCustomerId", { length: 255 }),
+    stripeSubscriptionId: varchar("stripeSubscriptionId", { length: 255 }),
+    subscriptionPlan: mysqlEnum("subscriptionPlan", [
+      "starter",
+      "growth",
+      "enterprise",
+    ]),
+    subscriptionStatus: mysqlEnum("subscriptionStatus", [
+      "inactive",
+      "trialing",
+      "active",
+      "past_due",
+      "canceled",
+      "unpaid",
+    ])
+      .default("inactive")
+      .notNull(),
+    trialEndsAt: timestamp("trialEndsAt"),
+    currentPeriodEndsAt: timestamp("currentPeriodEndsAt"),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  },
+  table => [
+    uniqueIndex("facilities_stripe_customer_unique").on(table.stripeCustomerId),
+    uniqueIndex("facilities_stripe_subscription_unique").on(
+      table.stripeSubscriptionId
+    ),
+  ]
+);
 
 export const facilityMembers = mysqlTable(
   "facilityMembers",

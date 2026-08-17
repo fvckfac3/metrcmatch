@@ -29,7 +29,11 @@ describe("POST /api/logs/create", () => {
       openId: "local:staff@example.com",
       isCron: false,
     });
-    mocks.ensureFacilityForUser.mockResolvedValue({ id: 44 });
+    mocks.ensureFacilityForUser.mockResolvedValue({
+      id: 44,
+      subscriptionStatus: "active",
+      trialEndsAt: null,
+    });
     mocks.getInventoryByPackage.mockResolvedValue({
       id: 5,
       metrcPackageId: "pkg-1",

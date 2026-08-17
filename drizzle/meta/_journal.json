@@ -29,6 +29,13 @@
       "when": 1786916046312,
       "tag": "0003_plain_maggott",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1786966189376,
+      "tag": "0004_adorable_golden_guardian",
+      "breakpoints": true
     }
   ]
 }

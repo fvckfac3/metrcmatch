@@ -76,3 +76,21 @@
 - [x] Review managed environment guidance against the runtime configuration contract and update it if needed.
 - [x] Add shared authorization tests for authenticated, cron, and authentication-failure request contexts.
 - [x] Add a managed-environment reference artifact that matches the runtime configuration contract without checking in secrets.
+- [x] Build a public pre-login landing page with the approved headline, positioning, feature narrative, FAQ teaser, and two calls to action.
+- [x] Preserve the authenticated compliance workspace behind a distinct protected route and add clear sign-in/workspace navigation.
+- [x] Use a labeled customer-proof placeholder instead of unverified testimonials or attributed savings/compliance claims.
+- [x] Avoid claiming current POS integration until a POS connector is implemented; present it as a planned integration capability.
+- [x] Verify responsive landing-page layout, primary CTAs, and accessibility, then save a checkpoint.
+- [ ] Add an FAQ teaser section covering POS compatibility, setup, data security, and discrepancy workflow.
+- [ ] Verify keyboard focus order and CTA accessibility on the landing page, then save the landing checkpoint.
+- [ ] Add the public landing-page FAQ teaser and complete landing-page accessibility verification.
+- [x] Configure Starter at $149/month, Growth at $349/month, and Enterprise contact-sales billing options.
+- [x] Require a payment card for a 14-day trial while deferring the first charge until the trial expires.
+- [x] Model facility-scoped subscription status, plan, trial, and entitlement limits.
+- [x] Gate all operational workspace routes, REST endpoints, typed procedures, syncs, reporting, and exports behind paid or active-trial entitlement, while allowing signed-in users to reach pricing and billing management.
+- [x] Build plan selection, checkout, trial state, upgrade, contact-sales, and billing-management user experiences.
+- [x] Add payment access-boundary tests, verify responsive paywall flows, and save a subscription checkpoint.
+- [x] Add a recoverable billing-status error view with retry rather than an indefinite workspace-loading fallback.
+- [x] Add user-visible error feedback when the Stripe billing portal cannot be opened.
+- [x] Document current plan-capacity presentation and defer multi-facility/license enforcement until the facility-group model exists.
+- [x] Normalize MySQL insert IDs so automatic facility provisioning creates valid memberships for signed-in billing and entitlement checks.

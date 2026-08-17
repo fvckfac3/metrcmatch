@@ -1,11 +1,11 @@
 import type { Express } from "express";
-import { requireFacilityContext, sendRouteError } from "../http";
+import { requireEntitledFacilityContext, sendRouteError } from "../http";
 import { runMetrcSync } from "../services";
 
 export function registerMetrcRoutes(app: Express) {
   app.post("/api/metrc/sync", async (req, res) => {
     try {
-      const { facility } = await requireFacilityContext(
+      const { facility } = await requireEntitledFacilityContext(
         req,
         "Scheduled sessions must use the scheduled sync route."
       );

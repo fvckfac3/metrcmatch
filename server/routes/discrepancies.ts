@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { z } from "zod";
 import * as db from "../db";
-import { requireFacilityContext, sendRouteError } from "../http";
+import { requireEntitledFacilityContext, sendRouteError } from "../http";
 
 const listQuerySchema = z.object({
   status: z
@@ -13,7 +13,7 @@ const listQuerySchema = z.object({
 export function registerDiscrepancyRoutes(app: Express) {
   app.get("/api/discrepancies/list", async (req, res) => {
     try {
-      const { facility } = await requireFacilityContext(
+      const { facility } = await requireEntitledFacilityContext(
         req,
         "Scheduled sessions cannot list dashboard discrepancies."
       );

@@ -15,6 +15,10 @@ import { registerMetrcRoutes } from "../routes/metrc";
 import { registerLogRoutes } from "../routes/logs";
 import { registerDiscrepancyRoutes } from "../routes/discrepancies";
 import { registerMetrcStatusRoutes } from "../routes/metrcStatus";
+import {
+  registerBillingRoutes,
+  registerStripeWebhookRoute,
+} from "../routes/billing";
 import { assertProductionConfiguration } from "./env";
 
 function isPortAvailable(port: number): Promise<boolean> {
@@ -35,6 +39,7 @@ async function startServer() {
   assertProductionConfiguration();
   const app = express();
   const server = createServer(app);
+  registerStripeWebhookRoute(app);
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
   registerStorageProxy(app);
@@ -44,6 +49,7 @@ async function startServer() {
   registerLogRoutes(app);
   registerDiscrepancyRoutes(app);
   registerMetrcStatusRoutes(app);
+  registerBillingRoutes(app);
   registerReportExportRoutes(app);
   app.post("/api/scheduled/metrc-sync", scheduledMetrcSync);
   app.use(

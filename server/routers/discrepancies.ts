@@ -1,10 +1,10 @@
 import { z } from "zod";
-import { protectedProcedure, router } from "../_core/trpc";
+import { paidProcedure, router } from "../_core/trpc";
 import * as db from "../db";
 import { getAuditRisk } from "../reconciliation";
 
 export const discrepanciesRouter = router({
-  list: protectedProcedure
+  list: paidProcedure
     .input(
       z
         .object({
@@ -19,7 +19,7 @@ export const discrepanciesRouter = router({
       const facility = await db.ensureFacilityForUser(ctx.user.id);
       return db.listDiscrepancies(facility.id, input);
     }),
-  resolve: protectedProcedure
+  resolve: paidProcedure
     .input(
       z.object({
         id: z.number().int().positive(),
@@ -32,7 +32,7 @@ export const discrepanciesRouter = router({
       await db.updateDiscrepancy(facility.id, input.id, input);
       return { success: true };
     }),
-  dashboard: protectedProcedure.query(async ({ ctx }) => {
+  dashboard: paidProcedure.query(async ({ ctx }) => {
     const facility = await db.ensureFacilityForUser(ctx.user.id);
     const data = await db.getDashboardData(facility.id);
     return { ...data, auditRisk: getAuditRisk(data.severities) };

@@ -25,6 +25,12 @@ vi.mock("./db", () => ({
 }));
 vi.mock("./services", () => ({ runMetrcSync: authMocks.runMetrcSync }));
 
+const activeFacility = {
+  id: 44,
+  subscriptionStatus: "active",
+  trialEndsAt: null,
+};
+
 describe("REST route contracts", () => {
   beforeEach(() => vi.clearAllMocks());
 
@@ -56,7 +62,7 @@ describe("REST route contracts", () => {
       openId: "local:manager@example.com",
       isCron: false,
     });
-    authMocks.ensureFacilityForUser.mockResolvedValue({ id: 44 });
+    authMocks.ensureFacilityForUser.mockResolvedValue(activeFacility);
     authMocks.runMetrcSync.mockRejectedValue(
       new Error("No Metrc connection is configured for this facility.")
     );
@@ -68,13 +74,13 @@ describe("REST route contracts", () => {
     expect(response.body.error).toContain("No Metrc connection");
   });
 
-  it("delegates an authenticated Metrc sync to the facility-scoped service", async () => {
+  it("delegates an entitled Metrc sync to the facility-scoped service", async () => {
     authMocks.authenticateRequest.mockResolvedValue({
       id: 12,
       openId: "local:manager@example.com",
       isCron: false,
     });
-    authMocks.ensureFacilityForUser.mockResolvedValue({ id: 44 });
+    authMocks.ensureFacilityForUser.mockResolvedValue(activeFacility);
     authMocks.runMetrcSync.mockResolvedValue({
       inventoryItems: 3,
       salesRecords: 2,
@@ -91,5 +97,27 @@ describe("REST route contracts", () => {
       inventoryItems: 3,
     });
     expect(authMocks.runMetrcSync).toHaveBeenCalledWith(44, "manual");
+  });
+
+  it("blocks an inactive facility before it can start a Metrc sync", async () => {
+    authMocks.authenticateRequest.mockResolvedValue({
+      id: 12,
+      openId: "local:manager@example.com",
+      isCron: false,
+    });
+    authMocks.ensureFacilityForUser.mockResolvedValue({
+      id: 44,
+      subscriptionStatus: "inactive",
+      trialEndsAt: null,
+    });
+    const app = express();
+    app.use(express.json());
+    registerMetrcRoutes(app);
+
+    const response = await request(app).post("/api/metrc/sync");
+
+    expect(response.status).toBe(402);
+    expect(response.body.code).toBe("SUBSCRIPTION_REQUIRED");
+    expect(authMocks.runMetrcSync).not.toHaveBeenCalled();
   });
 });

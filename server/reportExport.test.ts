@@ -59,7 +59,11 @@ describe("GET /api/reports/generate", () => {
       name: "Manager",
       isCron: false,
     });
-    mocks.ensureFacilityForUser.mockResolvedValue({ id: 44 });
+    mocks.ensureFacilityForUser.mockResolvedValue({
+      id: 44,
+      subscriptionStatus: "active",
+      trialEndsAt: null,
+    });
     mocks.createReport.mockResolvedValue(7);
     mocks.getReportData.mockResolvedValue(reportData);
   });

@@ -1,5 +1,6 @@
 import type { Request, Response } from "express";
 import { sdk } from "./_core/sdk";
+import { isFacilityEntitled } from "./billing";
 import * as db from "./db";
 import { runMetrcSync } from "./services";
 
@@ -10,6 +11,8 @@ export async function scheduledMetrcSync(req: Request, res: Response) {
       return res.status(403).json({ error: "cron-only" });
     const target = await db.getFacilityByScheduleTask(user.taskUid);
     if (!target) return res.json({ ok: true, skipped: "orphan" });
+    if (!isFacilityEntitled(target.facility))
+      return res.json({ ok: true, skipped: "subscription_required" });
     const result = await runMetrcSync(target.facility.id, "scheduled");
     return res.json({ ok: true, ...result });
   } catch (error) {

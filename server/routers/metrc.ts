@@ -2,7 +2,7 @@ import { parse as parseCookie } from "cookie";
 import { z } from "zod";
 import { COOKIE_NAME } from "../../shared/const";
 import { createHeartbeatJob, deleteHeartbeatJob } from "../_core/heartbeat";
-import { protectedProcedure, router } from "../_core/trpc";
+import { paidProcedure, router } from "../_core/trpc";
 import * as db from "../db";
 import { runMetrcSync, testConnectionForFacility } from "../services";
 
@@ -17,7 +17,7 @@ const settingsInput = z.object({
 });
 
 export const metrcRouter = router({
-  settings: protectedProcedure.query(async ({ ctx }) => {
+  settings: paidProcedure.query(async ({ ctx }) => {
     const facility = await db.ensureFacilityForUser(ctx.user.id);
     const connection = await db.getMetrcConnection(facility.id);
     return connection
@@ -36,26 +36,26 @@ export const metrcRouter = router({
         }
       : null;
   }),
-  saveSettings: protectedProcedure
+  saveSettings: paidProcedure
     .input(settingsInput)
     .mutation(async ({ ctx, input }) => {
       const facility = await db.ensureFacilityForUser(ctx.user.id);
       await db.saveMetrcConnection(facility.id, input);
       return { success: true };
     }),
-  test: protectedProcedure.mutation(async ({ ctx }) => {
+  test: paidProcedure.mutation(async ({ ctx }) => {
     const facility = await db.ensureFacilityForUser(ctx.user.id);
     return testConnectionForFacility(facility.id);
   }),
-  syncNow: protectedProcedure.mutation(async ({ ctx }) => {
+  syncNow: paidProcedure.mutation(async ({ ctx }) => {
     const facility = await db.ensureFacilityForUser(ctx.user.id);
     return runMetrcSync(facility.id, "manual");
   }),
-  history: protectedProcedure.query(async ({ ctx }) => {
+  history: paidProcedure.query(async ({ ctx }) => {
     const facility = await db.ensureFacilityForUser(ctx.user.id);
     return db.listSyncs(facility.id);
   }),
-  scheduleNightly: protectedProcedure
+  scheduleNightly: paidProcedure
     .input(
       z.object({
         cron: z
@@ -92,7 +92,7 @@ export const metrcRouter = router({
       await db.setScheduleTask(facility.id, job.taskUid);
       return job;
     }),
-  disableSchedule: protectedProcedure.mutation(async ({ ctx }) => {
+  disableSchedule: paidProcedure.mutation(async ({ ctx }) => {
     const facility = await db.ensureFacilityForUser(ctx.user.id);
     const connection = await db.getMetrcConnection(facility.id);
     if (!connection?.scheduleCronTaskUid) return { success: true };

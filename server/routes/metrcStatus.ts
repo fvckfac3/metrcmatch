@@ -1,12 +1,12 @@
 import type { Express } from "express";
 import * as db from "../db";
-import { requireFacilityContext, sendRouteError } from "../http";
+import { requireEntitledFacilityContext, sendRouteError } from "../http";
 import { getAuditRisk } from "../reconciliation";
 
 export function registerMetrcStatusRoutes(app: Express) {
   app.get("/api/metrc/status", async (req, res) => {
     try {
-      const { facility } = await requireFacilityContext(
+      const { facility } = await requireEntitledFacilityContext(
         req,
         "Scheduled sessions cannot read dashboard status."
       );

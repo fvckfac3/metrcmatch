@@ -10,7 +10,11 @@ vi.mock("./_core/sdk", () => ({
 }));
 vi.mock("./db", () => ({ ensureFacilityForUser: mocks.ensureFacilityForUser }));
 
-import { ApiError, requireFacilityContext } from "./http";
+import {
+  ApiError,
+  requireEntitledFacilityContext,
+  requireFacilityContext,
+} from "./http";
 
 describe("requireFacilityContext", () => {
   beforeEach(() => vi.clearAllMocks());
@@ -58,5 +62,42 @@ describe("requireFacilityContext", () => {
       requireFacilityContext({} as never, "Interactive session required.")
     ).rejects.toThrow("session is invalid");
     expect(mocks.ensureFacilityForUser).not.toHaveBeenCalled();
+  });
+
+  it("allows an active card-backed trial to use operational routes", async () => {
+    mocks.authenticateRequest.mockResolvedValue({ id: 17, isCron: false });
+    mocks.ensureFacilityForUser.mockResolvedValue({
+      id: 22,
+      subscriptionStatus: "trialing",
+      trialEndsAt: new Date(Date.now() + 86_400_000),
+    });
+
+    await expect(
+      requireEntitledFacilityContext(
+        {} as never,
+        "Interactive session required."
+      )
+    ).resolves.toMatchObject({ facility: { id: 22 } });
+  });
+
+  it("rejects inactive facilities before an operational route executes", async () => {
+    mocks.authenticateRequest.mockResolvedValue({ id: 17, isCron: false });
+    mocks.ensureFacilityForUser.mockResolvedValue({
+      id: 22,
+      subscriptionStatus: "inactive",
+      trialEndsAt: null,
+    });
+
+    await expect(
+      requireEntitledFacilityContext(
+        {} as never,
+        "Interactive session required."
+      )
+    ).rejects.toEqual(
+      expect.objectContaining<ApiError>({
+        status: 402,
+        code: "SUBSCRIPTION_REQUIRED",
+      })
+    );
   });
 });

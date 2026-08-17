@@ -24,7 +24,11 @@ describe("GET /api/discrepancies/list", () => {
       openId: "local:manager@example.com",
       isCron: false,
     });
-    mocks.ensureFacilityForUser.mockResolvedValue({ id: 44 });
+    mocks.ensureFacilityForUser.mockResolvedValue({
+      id: 44,
+      subscriptionStatus: "active",
+      trialEndsAt: null,
+    });
     mocks.listDiscrepancies.mockResolvedValue([
       { id: 1, severity: "high", status: "investigating" },
     ]);

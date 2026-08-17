@@ -1,12 +1,12 @@
 import { z } from "zod";
 import * as db from "../db";
-import { protectedProcedure, router } from "../_core/trpc";
+import { paidProcedure, protectedProcedure, router } from "../_core/trpc";
 
 export const facilityRouter = router({
   current: protectedProcedure.query(({ ctx }) =>
     db.ensureFacilityForUser(ctx.user.id)
   ),
-  save: protectedProcedure
+  save: paidProcedure
     .input(
       z.object({
         name: z.string().trim().min(2).max(255),

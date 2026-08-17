@@ -1,9 +1,9 @@
 import { z } from "zod";
-import { protectedProcedure, router } from "../_core/trpc";
+import { paidProcedure, router } from "../_core/trpc";
 import * as db from "../db";
 
 export const reportsRouter = router({
-  generate: protectedProcedure
+  generate: paidProcedure
     .input(
       z
         .object({ startDate: z.coerce.date(), endDate: z.coerce.date() })

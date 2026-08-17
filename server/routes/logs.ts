@@ -1,13 +1,13 @@
 import type { Express } from "express";
 import * as db from "../db";
-import { requireFacilityContext, sendRouteError } from "../http";
+import { requireEntitledFacilityContext, sendRouteError } from "../http";
 import { createLogSchema } from "../logValidation";
 import { reconcileFacility } from "../services";
 
 export function registerLogRoutes(app: Express) {
   app.post("/api/logs/create", async (req, res) => {
     try {
-      const { user, facility } = await requireFacilityContext(
+      const { user, facility } = await requireEntitledFacilityContext(
         req,
         "Scheduled sessions cannot create physical logs."
       );

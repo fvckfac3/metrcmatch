@@ -26,6 +26,7 @@ import { trpc } from "@/lib/trpc";
 import {
   AlertTriangle,
   ClipboardCheck,
+  CreditCard,
   FileText,
   LayoutDashboard,
   LogOut,
@@ -38,11 +39,12 @@ import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from "./DashboardLayoutSkeleton";
 
 const allMenuItems = [
-  { icon: LayoutDashboard, label: "Overview", path: "/" },
+  { icon: LayoutDashboard, label: "Overview", path: "/workspace" },
   { icon: ClipboardCheck, label: "Physical logs", path: "/logs" },
   { icon: AlertTriangle, label: "Discrepancies", path: "/discrepancies" },
   { icon: FileText, label: "Reports", path: "/reports" },
   { icon: Settings, label: "Facility & Metrc", path: "/settings" },
+  { icon: CreditCard, label: "Billing", path: "/billing" },
 ];
 
 const SIDEBAR_WIDTH_KEY = "metrcmatch-sidebar-width";
@@ -101,6 +103,9 @@ export default function DashboardLayout({
       <DashboardLayoutContent
         setSidebarWidth={setSidebarWidth}
         memberRole={facilityQuery.data?.memberRole}
+        subscriptionPlan={facilityQuery.data?.subscriptionPlan}
+        subscriptionStatus={facilityQuery.data?.subscriptionStatus}
+        trialEndsAt={facilityQuery.data?.trialEndsAt}
       >
         {children}
       </DashboardLayoutContent>
@@ -112,10 +117,16 @@ function DashboardLayoutContent({
   children,
   setSidebarWidth,
   memberRole,
+  subscriptionPlan,
+  subscriptionStatus,
+  trialEndsAt,
 }: {
   children: React.ReactNode;
   setSidebarWidth: (width: number) => void;
   memberRole?: "manager" | "staff";
+  subscriptionPlan?: "starter" | "growth" | "enterprise" | null;
+  subscriptionStatus?: string;
+  trialEndsAt?: Date | null;
 }) {
   const { user, logout } = useAuth();
   const [location, setLocation] = useLocation();
@@ -207,6 +218,26 @@ function DashboardLayoutContent({
             </SidebarMenu>
           </SidebarContent>
           <SidebarFooter className="p-3">
+            {!isCollapsed && memberRole !== "staff" && (
+              <button
+                onClick={() => setLocation("/billing")}
+                className="mb-3 w-full rounded-xl border border-[#d6e3d5] bg-[#f6faf5] p-3 text-left transition-colors hover:bg-[#eef5ed] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5e8b62]"
+              >
+                <p className="text-[10px] font-bold uppercase tracking-[0.13em] text-[#5e8b62]">
+                  {subscriptionStatus === "trialing"
+                    ? "Audit trial"
+                    : "Facility plan"}
+                </p>
+                <p className="mt-1 text-xs font-semibold text-[#173f3a]">
+                  {subscriptionPlan
+                    ? `${subscriptionPlan.charAt(0).toUpperCase()}${subscriptionPlan.slice(1)}`
+                    : "Choose a plan"}
+                  {subscriptionStatus === "trialing" && trialEndsAt
+                    ? ` · ${Math.max(0, Math.ceil((trialEndsAt.getTime() - Date.now()) / 86_400_000))} days`
+                    : ""}
+                </p>
+              </button>
+            )}
             {!isCollapsed && (
               <div className="mb-3 rounded-xl bg-[#f0f5ef] p-3 text-xs leading-5 text-[#61706b]">
                 <span className="font-semibold text-[#173f3a]">

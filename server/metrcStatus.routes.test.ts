@@ -24,7 +24,11 @@ describe("GET /api/metrc/status", () => {
       openId: "local:manager@example.com",
       isCron: false,
     });
-    mocks.ensureFacilityForUser.mockResolvedValue({ id: 44 });
+    mocks.ensureFacilityForUser.mockResolvedValue({
+      id: 44,
+      subscriptionStatus: "active",
+      trialEndsAt: null,
+    });
     mocks.getDashboardData.mockResolvedValue({
       connection: {
         connectionStatus: "connected",

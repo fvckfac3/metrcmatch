@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { protectedProcedure, router } from "../_core/trpc";
+import { paidProcedure, router } from "../_core/trpc";
 import * as db from "../db";
 import { reconcileFacility } from "../services";
 import {
@@ -20,7 +20,7 @@ async function productForLog(userId: number, packageId: string) {
 }
 
 export const logsRouter = router({
-  products: protectedProcedure
+  products: paidProcedure
     .input(z.object({ query: z.string().max(100).optional() }).optional())
     .query(async ({ ctx, input }) => {
       const facility = await db.ensureFacilityForUser(ctx.user.id);
@@ -36,7 +36,7 @@ export const logsRouter = router({
         )
         .slice(0, 30);
     }),
-  createCount: protectedProcedure
+  createCount: paidProcedure
     .input(countLogSchema.omit({ type: true }))
     .mutation(async ({ ctx, input }) => {
       const { facility, inventory } = await productForLog(
@@ -57,7 +57,7 @@ export const logsRouter = router({
       await reconcileFacility(facility.id);
       return { success: true };
     }),
-  createDamage: protectedProcedure
+  createDamage: paidProcedure
     .input(damageLogSchema)
     .mutation(async ({ ctx, input }) => {
       const { facility, inventory } = await productForLog(
@@ -79,7 +79,7 @@ export const logsRouter = router({
       await reconcileFacility(facility.id);
       return { success: true };
     }),
-  createTest: protectedProcedure
+  createTest: paidProcedure
     .input(testLogSchema.omit({ type: true }))
     .mutation(async ({ ctx, input }) => {
       const { facility, inventory } = await productForLog(
@@ -104,7 +104,7 @@ export const logsRouter = router({
           .includes(input.testStatus),
       };
     }),
-  list: protectedProcedure
+  list: paidProcedure
     .input(
       z
         .object({

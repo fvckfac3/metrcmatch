@@ -37,6 +37,18 @@ async function requireDb() {
   return database;
 }
 
+export function getInsertId(result: unknown) {
+  const header = Array.isArray(result) ? result[0] : result;
+  const insertId =
+    header && typeof header === "object" && "insertId" in header
+      ? (header as { insertId?: unknown }).insertId
+      : undefined;
+  const id = Number(insertId);
+  if (!Number.isSafeInteger(id) || id <= 0)
+    throw new Error("Database insert did not return a valid record ID.");
+  return id;
+}
+
 export async function processInBatches<T>(
   items: readonly T[],
   batchSize: number,
@@ -128,9 +140,7 @@ export async function ensureFacilityForUser(userId: number) {
   const created = await database
     .insert(facilities)
     .values({ name: "Facility setup required" });
-  const facilityId = Number(
-    (created as unknown as { insertId: number }).insertId
-  );
+  const facilityId = getInsertId(created);
   await database
     .insert(facilityMembers)
     .values({ facilityId, userId, role: "manager" });
@@ -168,6 +178,55 @@ export async function updateFacility(
       .where(eq(facilities.id, facility.id))
       .limit(1)
   )[0]!;
+}
+
+export async function updateFacilityBilling(
+  facilityId: number,
+  input: {
+    stripeCustomerId?: string | null;
+    stripeSubscriptionId?: string | null;
+    subscriptionPlan?: "starter" | "growth" | "enterprise" | null;
+    subscriptionStatus?:
+      | "inactive"
+      | "trialing"
+      | "active"
+      | "past_due"
+      | "canceled"
+      | "unpaid";
+    trialEndsAt?: Date | null;
+    currentPeriodEndsAt?: Date | null;
+  }
+) {
+  const database = await requireDb();
+  await database
+    .update(facilities)
+    .set(input)
+    .where(eq(facilities.id, facilityId));
+  return getFacility(facilityId);
+}
+
+export async function getFacilityByStripeSubscription(
+  stripeSubscriptionId: string
+) {
+  const database = await requireDb();
+  return (
+    await database
+      .select()
+      .from(facilities)
+      .where(eq(facilities.stripeSubscriptionId, stripeSubscriptionId))
+      .limit(1)
+  )[0];
+}
+
+export async function getFacilityByStripeCustomer(stripeCustomerId: string) {
+  const database = await requireDb();
+  return (
+    await database
+      .select()
+      .from(facilities)
+      .where(eq(facilities.stripeCustomerId, stripeCustomerId))
+      .limit(1)
+  )[0];
 }
 
 export async function getFacility(facilityId: number) {
@@ -280,7 +339,7 @@ export async function createSync(
   const result = await database
     .insert(metrcSyncs)
     .values({ facilityId, trigger, status: "running" });
-  return Number((result as unknown as { insertId: number }).insertId);
+  return getInsertId(result);
 }
 
 export async function finishSync(
@@ -425,7 +484,7 @@ export async function createPhysicalLog(input: {
         : String(input.quantity),
     occurredAt: new Date(),
   });
-  return Number((result as unknown as { insertId: number }).insertId);
+  return getInsertId(result);
 }
 
 export async function listPhysicalLogs(
@@ -525,7 +584,7 @@ export async function upsertDiscrepancy(input: {
   }
   const result = await database.insert(discrepancies).values(values);
   return {
-    id: Number((result as unknown as { insertId: number }).insertId),
+    id: getInsertId(result),
     isNew: true,
     severity: input.severity,
   };
@@ -608,7 +667,7 @@ export async function createNotification(input: {
     recipient: input.recipient ?? null,
     status: input.status ?? (input.recipient ? "queued" : "suppressed"),
   });
-  return Number((result as unknown as { insertId: number }).insertId);
+  return getInsertId(result);
 }
 
 export async function updateNotificationStatus(
@@ -732,7 +791,7 @@ export async function createReport(
       .length,
   };
   const result = await database.insert(reconciliationReports).values(values);
-  return Number((result as unknown as { insertId: number }).insertId);
+  return getInsertId(result);
 }
 
 export async function getReportData(facilityId: number, reportId: number) {
