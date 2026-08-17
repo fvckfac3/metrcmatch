@@ -1,16 +1,30 @@
 import type { Express, Request, Response } from "express";
 import PDFDocument from "pdfkit";
+import { z } from "zod";
 import { sdk } from "./_core/sdk";
 import * as db from "./db";
+
+const generateQuerySchema = z.object({
+  start_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "start_date must use YYYY-MM-DD"),
+  end_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "end_date must use YYYY-MM-DD"),
+  format: z.enum(["pdf", "csv"]),
+});
 
 function csvEscape(value: unknown) {
   const text = String(value ?? "");
   return /[",\n]/.test(text) ? `"${text.replaceAll('"', '""')}"` : text;
 }
 
-function asCsv(data: Awaited<ReturnType<typeof db.getReportData>>) {
-  const header = ["Product", "SKU", "Metrc quantity", "Physical quantity", "Variance", "Variance %", "Severity", "Likely cause", "Resolution status", "Resolution notes"];
-  const rows = data.lines.map(line => [line.productName, line.sku, line.metrcQuantity, line.physicalQuantity ?? "Not logged", line.varianceQuantity, line.variancePercent, line.severity, line.likelyCause, line.status, line.resolutionNotes]);
+function parseDateRange(startDate: string, endDate: string) {
+  const start = new Date(`${startDate}T00:00:00.000Z`);
+  const end = new Date(`${endDate}T23:59:59.999Z`);
+  if (!Number.isFinite(start.getTime()) || !Number.isFinite(end.getTime()) || start > end) throw new Error("start_date must be on or before end_date.");
+  return { start, end };
+}
+
+export function asCsv(data: Awaited<ReturnType<typeof db.getReportData>>) {
+  const header = ["Product", "SKU", "Metrc quantity", "Physical quantity", "Variance", "Variance %", "Severity", "Likely cause", "Resolution status", "Resolution notes", "Detected at"];
+  const rows = data.lines.map(line => [line.productName, line.sku, line.metrcQuantity, line.physicalQuantity ?? "Not logged", line.varianceQuantity, line.variancePercent, line.severity, line.likelyCause, line.status, line.resolutionNotes, line.detectedAt.toISOString()]);
   return [
     ["MetrcMatch Reconciliation Report"],
     ["Facility", data.facility.name],
@@ -19,17 +33,20 @@ function asCsv(data: Awaited<ReturnType<typeof db.getReportData>>) {
     ["Report period", `${data.report.startDate.toISOString().slice(0, 10)} to ${data.report.endDate.toISOString().slice(0, 10)}`],
     [],
     ["Summary", "Value"],
-    ["Total items reconciled", data.report.totalItemsReconciled],
+    ["Total items", data.report.totalItemsReconciled],
     ["Discrepancies found", data.report.discrepanciesFound],
     ["Discrepancies resolved", data.report.discrepanciesResolved],
     ["Outstanding discrepancies", data.report.outstandingDiscrepancies],
+    ["Critical", data.report.criticalCount],
+    ["High", data.report.highCount],
+    ["Medium", data.report.mediumCount],
     [],
     header,
     ...rows,
   ].map(row => row.map(csvEscape).join(",")).join("\n");
 }
 
-function asPdf(res: Response, data: Awaited<ReturnType<typeof db.getReportData>>) {
+export function asPdf(res: Response, data: Awaited<ReturnType<typeof db.getReportData>>) {
   const document = new PDFDocument({ margin: 44, size: "LETTER" });
   document.pipe(res);
   document.fontSize(18).fillColor("#173f3a").text("MetrcMatch reconciliation report");
@@ -41,13 +58,13 @@ function asPdf(res: Response, data: Awaited<ReturnType<typeof db.getReportData>>
   document.moveDown().fontSize(13).fillColor("#173f3a").text("Reconciliation summary");
   document.fontSize(10).fillColor("#1f2937");
   [
-    `Total items reconciled: ${data.report.totalItemsReconciled}`,
+    `Total items: ${data.report.totalItemsReconciled}`,
     `Discrepancies found: ${data.report.discrepanciesFound}`,
-    `Resolved: ${data.report.discrepanciesResolved}`,
+    `Discrepancies resolved: ${data.report.discrepanciesResolved}`,
     `Outstanding: ${data.report.outstandingDiscrepancies}`,
     `Severity: ${data.report.criticalCount} Critical · ${data.report.highCount} High · ${data.report.mediumCount} Medium`,
   ].forEach(line => document.text(line));
-  document.moveDown().fontSize(13).fillColor("#173f3a").text("Discrepancy detail");
+  document.moveDown().fontSize(13).fillColor("#173f3a").text("Discrepancy line items");
   document.moveDown(0.25).fontSize(8).fillColor("#1f2937");
   if (!data.lines.length) document.text("No discrepancies were recorded in the selected period.");
   for (const line of data.lines) {
@@ -59,7 +76,39 @@ function asPdf(res: Response, data: Awaited<ReturnType<typeof db.getReportData>>
   document.end();
 }
 
+function sendReport(res: Response, data: Awaited<ReturnType<typeof db.getReportData>>, format: "pdf" | "csv") {
+  const fileBase = `metrcmatch-reconciliation-${data.report.startDate.toISOString().slice(0, 10)}-${data.report.endDate.toISOString().slice(0, 10)}`;
+  if (format === "csv") {
+    res.setHeader("Content-Type", "text/csv; charset=utf-8");
+    res.setHeader("Content-Disposition", `attachment; filename="${fileBase}.csv"`);
+    return res.send(asCsv(data));
+  }
+  res.setHeader("Content-Type", "application/pdf");
+  res.setHeader("Content-Disposition", `attachment; filename="${fileBase}.pdf"`);
+  asPdf(res, data);
+}
+
 export function registerReportExportRoutes(app: Express) {
+  app.get("/api/reports/generate", async (req, res) => {
+    try {
+      const user = await sdk.authenticateRequest(req);
+      if (user.isCron) return res.status(403).json({ error: "User session required" });
+      const input = generateQuerySchema.parse({ start_date: req.query.start_date, end_date: req.query.end_date, format: req.query.format });
+      const { start, end } = parseDateRange(input.start_date, input.end_date);
+      const facility = await db.ensureFacilityForUser(user.id);
+      const reportId = await db.createReport(facility.id, user, start, end);
+      const data = await db.getReportData(facility.id, reportId);
+      return sendReport(res, data, input.format);
+    } catch (error) {
+      if (error instanceof z.ZodError) return res.status(400).json({ error: "start_date, end_date, and format=pdf|csv are required.", details: error.flatten() });
+      if (error instanceof Error && error.message.includes("start_date")) return res.status(400).json({ error: error.message });
+      const message = error instanceof Error ? error.message : "Report generation failed.";
+      if (/session|auth|user/i.test(message)) return res.status(401).json({ error: "Authentication required." });
+      console.error("[Reports] Generation failed", error);
+      return res.status(500).json({ error: "Report generation failed." });
+    }
+  });
+
   app.get("/api/reports/export", async (req: Request, res: Response) => {
     try {
       const user = await sdk.authenticateRequest(req);
@@ -69,15 +118,7 @@ export function registerReportExportRoutes(app: Express) {
       if (!Number.isInteger(reportId) || reportId <= 0) return res.status(400).json({ error: "A valid reportId is required" });
       const facility = await db.ensureFacilityForUser(user.id);
       const data = await db.getReportData(facility.id, reportId);
-      const fileBase = `metrcmatch-reconciliation-${data.report.createdAt.toISOString().slice(0, 10)}`;
-      if (format === "csv") {
-        res.setHeader("Content-Type", "text/csv; charset=utf-8");
-        res.setHeader("Content-Disposition", `attachment; filename="${fileBase}.csv"`);
-        return res.send(asCsv(data));
-      }
-      res.setHeader("Content-Type", "application/pdf");
-      res.setHeader("Content-Disposition", `attachment; filename="${fileBase}.pdf"`);
-      asPdf(res, data);
+      return sendReport(res, data, format);
     } catch (error) {
       res.status(500).json({ error: error instanceof Error ? error.message : "Report export failed" });
     }

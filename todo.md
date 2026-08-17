@@ -57,3 +57,8 @@
 - [x] Add persisted discrepancy trend chart data and responsive chart presentation.
 - [x] Add Sync now, Generate report, and Review discrepancies actions with loading and error states.
 - [x] Verify dashboard desktop/mobile rendering, add tests, and save a checkpoint.
+- [x] Add validated date-range report aggregation for total items, found/resolved discrepancies, outstanding items, severity summary, and line items.
+- [x] Implement PDF export using the existing server-side PDF dependency.
+- [x] Implement CSV export with the same report sections and line-item detail.
+- [x] Add authenticated `GET /api/reports/generate` with `start_date`, `end_date`, and `format=pdf|csv` query parameters.
+- [x] Add report endpoint and renderer tests, verify output headers/content, run type checks, and save a checkpoint.
