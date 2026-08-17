@@ -15,6 +15,7 @@ import { registerMetrcRoutes } from "../routes/metrc";
 import { registerLogRoutes } from "../routes/logs";
 import { registerDiscrepancyRoutes } from "../routes/discrepancies";
 import { registerMetrcStatusRoutes } from "../routes/metrcStatus";
+import { assertProductionConfiguration } from "./env";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -25,11 +26,13 @@ function isPortAvailable(port: number): Promise<boolean> {
 }
 
 async function findAvailablePort(startPort = 3000): Promise<number> {
-  for (let port = startPort; port < startPort + 20; port++) if (await isPortAvailable(port)) return port;
+  for (let port = startPort; port < startPort + 20; port++)
+    if (await isPortAvailable(port)) return port;
   throw new Error(`No available port found starting from ${startPort}`);
 }
 
 async function startServer() {
+  assertProductionConfiguration();
   const app = express();
   const server = createServer(app);
   app.use(express.json({ limit: "50mb" }));
@@ -43,10 +46,16 @@ async function startServer() {
   registerMetrcStatusRoutes(app);
   registerReportExportRoutes(app);
   app.post("/api/scheduled/metrc-sync", scheduledMetrcSync);
-  app.use("/api/trpc", createExpressMiddleware({ router: appRouter, createContext }));
-  if (process.env.NODE_ENV === "development") await setupVite(app, server); else serveStatic(app);
+  app.use(
+    "/api/trpc",
+    createExpressMiddleware({ router: appRouter, createContext })
+  );
+  if (process.env.NODE_ENV === "development") await setupVite(app, server);
+  else serveStatic(app);
   const port = await findAvailablePort(parseInt(process.env.PORT || "3000"));
-  server.listen(port, () => console.log(`Server running on http://localhost:${port}/`));
+  server.listen(port, () =>
+    console.log(`Server running on http://localhost:${port}/`)
+  );
 }
 
 startServer().catch(console.error);

@@ -11,7 +11,11 @@ export function emailDeliveryReady(recipient: string | null) {
 }
 
 export async function sendComplianceAlert(alert: ComplianceAlert) {
-  if (!emailDeliveryReady(alert.recipient)) return { delivered: false as const, reason: "Email delivery is not configured." };
+  if (!emailDeliveryReady(alert.recipient))
+    return {
+      delivered: false as const,
+      reason: "Email delivery is not configured.",
+    };
   const response = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: {
@@ -25,6 +29,7 @@ export async function sendComplianceAlert(alert: ComplianceAlert) {
       text: `${alert.detail}\n\nMetrcMatch is an advisory reconciliation tool. Verify the underlying records and complete required reporting as appropriate.`,
     }),
   });
-  if (!response.ok) throw new Error(`Alert email provider returned ${response.status}.`);
+  if (!response.ok)
+    throw new Error(`Alert email provider returned ${response.status}.`);
   return { delivered: true as const };
 }

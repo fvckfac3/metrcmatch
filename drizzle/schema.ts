@@ -30,7 +30,9 @@ export const facilities = mysqlTable("facilities", {
   name: varchar("name", { length: 255 }).notNull(),
   licenseNumber: varchar("licenseNumber", { length: 100 }),
   address: varchar("address", { length: 500 }),
-  timezone: varchar("timezone", { length: 64 }).default("America/Los_Angeles").notNull(),
+  timezone: varchar("timezone", { length: 64 })
+    .default("America/Los_Angeles")
+    .notNull(),
   complianceManagerEmail: varchar("complianceManagerEmail", { length: 320 }),
   onboardingComplete: boolean("onboardingComplete").default(false).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
@@ -47,7 +49,10 @@ export const facilityMembers = mysqlTable(
     createdAt: timestamp("createdAt").defaultNow().notNull(),
   },
   table => [
-    uniqueIndex("facilityMembers_facility_user_unique").on(table.facilityId, table.userId),
+    uniqueIndex("facilityMembers_facility_user_unique").on(
+      table.facilityId,
+      table.userId
+    ),
     index("facilityMembers_user_idx").on(table.userId),
   ]
 );
@@ -57,14 +62,22 @@ export const metrcConnections = mysqlTable(
   {
     id: int("id").autoincrement().primaryKey(),
     facilityId: int("facilityId").notNull(),
-    authMethod: mysqlEnum("authMethod", ["api_key", "oauth"]).default("api_key").notNull(),
+    authMethod: mysqlEnum("authMethod", ["api_key", "oauth"])
+      .default("api_key")
+      .notNull(),
     encryptedUserApiKey: text("encryptedUserApiKey"),
     encryptedIntegratorApiKey: text("encryptedIntegratorApiKey"),
     encryptedOauthClientId: text("encryptedOauthClientId"),
     encryptedOauthClientSecret: text("encryptedOauthClientSecret"),
-    apiBaseUrl: varchar("apiBaseUrl", { length: 500 }).default("https://api-or.metrc.com").notNull(),
+    apiBaseUrl: varchar("apiBaseUrl", { length: 500 })
+      .default("https://api-or.metrc.com")
+      .notNull(),
     licenseNumber: varchar("licenseNumber", { length: 100 }),
-    connectionStatus: mysqlEnum("connectionStatus", ["not_connected", "connected", "error"])
+    connectionStatus: mysqlEnum("connectionStatus", [
+      "not_connected",
+      "connected",
+      "error",
+    ])
       .default("not_connected")
       .notNull(),
     lastTestedAt: timestamp("lastTestedAt"),
@@ -93,7 +106,12 @@ export const metrcSyncs = mysqlTable(
     startedAt: timestamp("startedAt").defaultNow().notNull(),
     finishedAt: timestamp("finishedAt"),
   },
-  table => [index("metrcSyncs_facility_started_idx").on(table.facilityId, table.startedAt)]
+  table => [
+    index("metrcSyncs_facility_started_idx").on(
+      table.facilityId,
+      table.startedAt
+    ),
+  ]
 );
 
 export const inventorySnapshots = mysqlTable(
@@ -106,15 +124,25 @@ export const inventorySnapshots = mysqlTable(
     productName: varchar("productName", { length: 500 }).notNull(),
     sku: varchar("sku", { length: 255 }),
     quantity: decimal("quantity", { precision: 14, scale: 3 }).notNull(),
-    unitOfMeasure: varchar("unitOfMeasure", { length: 64 }).default("units").notNull(),
-    testingStatus: varchar("testingStatus", { length: 100 }).default("Unknown").notNull(),
+    unitOfMeasure: varchar("unitOfMeasure", { length: 64 })
+      .default("units")
+      .notNull(),
+    testingStatus: varchar("testingStatus", { length: 100 })
+      .default("Unknown")
+      .notNull(),
     sourceLastModifiedAt: timestamp("sourceLastModifiedAt"),
     capturedAt: timestamp("capturedAt").defaultNow().notNull(),
     updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
   },
   table => [
-    uniqueIndex("inventorySnapshots_facility_package_unique").on(table.facilityId, table.metrcPackageId),
-    index("inventorySnapshots_facility_product_idx").on(table.facilityId, table.productName),
+    uniqueIndex("inventorySnapshots_facility_package_unique").on(
+      table.facilityId,
+      table.metrcPackageId
+    ),
+    index("inventorySnapshots_facility_product_idx").on(
+      table.facilityId,
+      table.productName
+    ),
   ]
 );
 
@@ -131,8 +159,14 @@ export const metrcTestResults = mysqlTable(
     capturedAt: timestamp("capturedAt").defaultNow().notNull(),
   },
   table => [
-    uniqueIndex("metrcTestResults_facility_package_unique").on(table.facilityId, table.metrcPackageId),
-    index("metrcTestResults_facility_modified_idx").on(table.facilityId, table.sourceLastModifiedAt),
+    uniqueIndex("metrcTestResults_facility_package_unique").on(
+      table.facilityId,
+      table.metrcPackageId
+    ),
+    index("metrcTestResults_facility_modified_idx").on(
+      table.facilityId,
+      table.sourceLastModifiedAt
+    ),
   ]
 );
 
@@ -146,10 +180,21 @@ export const physicalLogs = mysqlTable(
     metrcPackageId: varchar("metrcPackageId", { length: 128 }),
     productName: varchar("productName", { length: 500 }).notNull(),
     sku: varchar("sku", { length: 255 }),
-    type: mysqlEnum("type", ["count", "damage", "discard", "test_result"]).notNull(),
+    type: mysqlEnum("type", [
+      "count",
+      "damage",
+      "discard",
+      "test_result",
+    ]).notNull(),
     quantity: decimal("quantity", { precision: 14, scale: 3 }),
     location: varchar("location", { length: 255 }),
-    reason: mysqlEnum("reason", ["broken", "expired", "theft", "waste", "other"]),
+    reason: mysqlEnum("reason", [
+      "broken",
+      "expired",
+      "theft",
+      "waste",
+      "other",
+    ]),
     testStatus: mysqlEnum("testStatus", ["passed", "failed"]),
     receivedAt: timestamp("receivedAt"),
     notes: text("notes"),
@@ -157,8 +202,14 @@ export const physicalLogs = mysqlTable(
     createdAt: timestamp("createdAt").defaultNow().notNull(),
   },
   table => [
-    index("physicalLogs_facility_date_idx").on(table.facilityId, table.occurredAt),
-    index("physicalLogs_facility_package_idx").on(table.facilityId, table.metrcPackageId),
+    index("physicalLogs_facility_date_idx").on(
+      table.facilityId,
+      table.occurredAt
+    ),
+    index("physicalLogs_facility_package_idx").on(
+      table.facilityId,
+      table.metrcPackageId
+    ),
   ]
 );
 
@@ -171,13 +222,27 @@ export const discrepancies = mysqlTable(
     metrcPackageId: varchar("metrcPackageId", { length: 128 }).notNull(),
     productName: varchar("productName", { length: 500 }).notNull(),
     sku: varchar("sku", { length: 255 }),
-    metrcQuantity: decimal("metrcQuantity", { precision: 14, scale: 3 }).notNull(),
+    metrcQuantity: decimal("metrcQuantity", {
+      precision: 14,
+      scale: 3,
+    }).notNull(),
     physicalQuantity: decimal("physicalQuantity", { precision: 14, scale: 3 }),
-    varianceQuantity: decimal("varianceQuantity", { precision: 14, scale: 3 }).notNull(),
-    variancePercent: decimal("variancePercent", { precision: 8, scale: 2 }).notNull(),
+    varianceQuantity: decimal("varianceQuantity", {
+      precision: 14,
+      scale: 3,
+    }).notNull(),
+    variancePercent: decimal("variancePercent", {
+      precision: 8,
+      scale: 2,
+    }).notNull(),
     severity: mysqlEnum("severity", ["critical", "high", "medium"]).notNull(),
     likelyCause: varchar("likelyCause", { length: 500 }).notNull(),
-    status: mysqlEnum("status", ["investigating", "resolved", "awaiting_lab", "other"])
+    status: mysqlEnum("status", [
+      "investigating",
+      "resolved",
+      "awaiting_lab",
+      "other",
+    ])
       .default("investigating")
       .notNull(),
     resolutionNotes: text("resolutionNotes"),
@@ -186,8 +251,14 @@ export const discrepancies = mysqlTable(
     updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
   },
   table => [
-    uniqueIndex("discrepancies_facility_package_unique").on(table.facilityId, table.metrcPackageId),
-    index("discrepancies_facility_severity_idx").on(table.facilityId, table.severity),
+    uniqueIndex("discrepancies_facility_package_unique").on(
+      table.facilityId,
+      table.metrcPackageId
+    ),
+    index("discrepancies_facility_severity_idx").on(
+      table.facilityId,
+      table.severity
+    ),
   ]
 );
 
@@ -203,13 +274,20 @@ export const reconciliationReports = mysqlTable(
     totalItemsReconciled: int("totalItemsReconciled").default(0).notNull(),
     discrepanciesFound: int("discrepanciesFound").default(0).notNull(),
     discrepanciesResolved: int("discrepanciesResolved").default(0).notNull(),
-    outstandingDiscrepancies: int("outstandingDiscrepancies").default(0).notNull(),
+    outstandingDiscrepancies: int("outstandingDiscrepancies")
+      .default(0)
+      .notNull(),
     criticalCount: int("criticalCount").default(0).notNull(),
     highCount: int("highCount").default(0).notNull(),
     mediumCount: int("mediumCount").default(0).notNull(),
     createdAt: timestamp("createdAt").defaultNow().notNull(),
   },
-  table => [index("reconciliationReports_facility_created_idx").on(table.facilityId, table.createdAt)]
+  table => [
+    index("reconciliationReports_facility_created_idx").on(
+      table.facilityId,
+      table.createdAt
+    ),
+  ]
 );
 
 export const notificationEvents = mysqlTable(
@@ -218,17 +296,30 @@ export const notificationEvents = mysqlTable(
     id: int("id").autoincrement().primaryKey(),
     facilityId: int("facilityId").notNull(),
     discrepancyId: int("discrepancyId"),
-    type: mysqlEnum("type", ["critical_discrepancy", "high_discrepancy", "audit_risk_red"]).notNull(),
+    type: mysqlEnum("type", [
+      "critical_discrepancy",
+      "high_discrepancy",
+      "audit_risk_red",
+    ]).notNull(),
     recipient: varchar("recipient", { length: 320 }),
-    status: mysqlEnum("status", ["queued", "sent", "suppressed", "failed"]).default("queued").notNull(),
+    status: mysqlEnum("status", ["queued", "sent", "suppressed", "failed"])
+      .default("queued")
+      .notNull(),
     detail: text("detail").notNull(),
     createdAt: timestamp("createdAt").defaultNow().notNull(),
     deliveredAt: timestamp("deliveredAt"),
   },
-  table => [index("notificationEvents_facility_created_idx").on(table.facilityId, table.createdAt)]
+  table => [
+    index("notificationEvents_facility_created_idx").on(
+      table.facilityId,
+      table.createdAt
+    ),
+  ]
 );
 
-export const usersRelations = relations(users, ({ many }) => ({ memberships: many(facilityMembers) }));
+export const usersRelations = relations(users, ({ many }) => ({
+  memberships: many(facilityMembers),
+}));
 export const facilitiesRelations = relations(facilities, ({ many }) => ({
   members: many(facilityMembers),
   inventory: many(inventorySnapshots),

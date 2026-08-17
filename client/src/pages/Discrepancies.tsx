@@ -4,7 +4,15 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { trpc } from "@/lib/trpc";
-import { AlertTriangle, CheckCircle2, ChevronDown, CircleAlert, FlaskConical, Filter, RefreshCw } from "lucide-react";
+import {
+  AlertTriangle,
+  CheckCircle2,
+  ChevronDown,
+  CircleAlert,
+  FlaskConical,
+  Filter,
+  RefreshCw,
+} from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -12,19 +20,307 @@ type Status = "investigating" | "resolved" | "awaiting_lab" | "other";
 
 export default function Discrepancies() {
   const [status, setStatus] = useState<Status | "all">("all");
-  const [severity, setSeverity] = useState<"critical" | "high" | "medium" | "all">("all");
-  const [sort, setSort] = useState<"severity" | "recent" | "variance">("severity");
+  const [severity, setSeverity] = useState<
+    "critical" | "high" | "medium" | "all"
+  >("all");
+  const [sort, setSort] = useState<"severity" | "recent" | "variance">(
+    "severity"
+  );
   const [expanded, setExpanded] = useState<number | null>(null);
   const [note, setNote] = useState("");
   const utils = trpc.useUtils();
-  const list = trpc.discrepancies.list.useQuery({ status: status === "all" ? undefined : status, severity: severity === "all" ? undefined : severity });
-  const update = trpc.discrepancies.resolve.useMutation({ onSuccess: () => { toast.success("Discrepancy updated."); setExpanded(null); setNote(""); void utils.discrepancies.list.invalidate(); void utils.discrepancies.dashboard.invalidate(); }, onError: error => toast.error(error.message) });
-  const statusTone = (level: "critical" | "high" | "medium") => level === "critical" ? "red" : level === "high" ? "yellow" : "neutral";
-  const rows = [...(list.data ?? [])].sort((a, b) => sort === "variance" ? Number(b.variancePercent) - Number(a.variancePercent) : sort === "recent" ? new Date(b.detectedAt).getTime() - new Date(a.detectedAt).getTime() : ({ critical: 0, high: 1, medium: 2 }[a.severity] - { critical: 0, high: 1, medium: 2 }[b.severity]));
+  const list = trpc.discrepancies.list.useQuery({
+    status: status === "all" ? undefined : status,
+    severity: severity === "all" ? undefined : severity,
+  });
+  const update = trpc.discrepancies.resolve.useMutation({
+    onSuccess: () => {
+      toast.success("Discrepancy updated.");
+      setExpanded(null);
+      setNote("");
+      void utils.discrepancies.list.invalidate();
+      void utils.discrepancies.dashboard.invalidate();
+    },
+    onError: error => toast.error(error.message),
+  });
+  const statusTone = (level: "critical" | "high" | "medium") =>
+    level === "critical" ? "red" : level === "high" ? "yellow" : "neutral";
+  const rows = [...(list.data ?? [])].sort((a, b) =>
+    sort === "variance"
+      ? Number(b.variancePercent) - Number(a.variancePercent)
+      : sort === "recent"
+        ? new Date(b.detectedAt).getTime() - new Date(a.detectedAt).getTime()
+        : { critical: 0, high: 1, medium: 2 }[a.severity] -
+          { critical: 0, high: 1, medium: 2 }[b.severity]
+  );
 
-  return <div className="motion-rise mx-auto max-w-6xl space-y-6"><div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"><div><p className="text-sm font-semibold text-[#356e45]">Reconciliation queue</p><h1 className="mt-1 text-3xl font-semibold tracking-tight text-[#173f3a]">Discrepancies</h1><p className="mt-2 max-w-2xl text-sm leading-6 text-[#6f7d77]">Prioritize operational risk, document why it happened, and retain the resolution context.</p></div><Button variant="outline" onClick={() => void utils.discrepancies.list.invalidate()} className="border-[#b8cbb9] text-[#205b35]"><RefreshCw className="mr-2 h-4 w-4" />Refresh</Button></div>
-    <Card className="surface-lift motion-rise motion-delay-1 border-[#dce3da] bg-white shadow-[0_12px_28px_rgba(18,53,47,0.05)]"><CardContent className="p-0"><div className="flex flex-col gap-3 border-b border-[#e8eee8] p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6"><div className="flex items-center gap-2"><Filter className="h-4 w-4 text-[#5e8b62]" /><span className="text-sm font-semibold text-[#30453f]">Filter queue</span></div><div className="grid grid-cols-2 gap-2 sm:flex"><select value={severity} onChange={e => setSeverity(e.target.value as typeof severity)} className="h-10 rounded-xl border border-[#ccd8cf] bg-white px-3 text-sm text-[#30453f]"><option value="all">All severities</option><option value="critical">Critical</option><option value="high">High</option><option value="medium">Medium</option></select><select value={sort} onChange={e => setSort(e.target.value as typeof sort)} className="h-10 rounded-xl border border-[#ccd8cf] bg-white px-3 text-sm text-[#30453f]"><option value="severity">Sort: severity</option><option value="recent">Sort: recent</option><option value="variance">Sort: variance</option></select><select value={status} onChange={e => setStatus(e.target.value as typeof status)} className="h-10 rounded-xl border border-[#ccd8cf] bg-white px-3 text-sm text-[#30453f]"><option value="all">All statuses</option><option value="investigating">Investigating</option><option value="awaiting_lab">Awaiting Lab</option><option value="resolved">Resolved</option><option value="other">Other</option></select></div></div>
-        {list.isLoading ? <div className="p-6 text-sm text-[#7d8a84]">Loading discrepancy queue…</div> : rows.length ? <div>{rows.map(item => <div key={item.id} className="border-b border-[#eef1ee] last:border-0"><button onClick={() => { setExpanded(expanded === item.id ? null : item.id); setNote(item.resolutionNotes ?? ""); }} className="surface-lift grid w-full grid-cols-[auto_1fr_auto_auto] items-center gap-3 px-5 py-4 text-left hover:bg-[#f7faf6] sm:px-6"><span className={`h-2.5 w-2.5 rounded-full ${item.severity === "critical" ? "bg-[#c2413c]" : item.severity === "high" ? "bg-[#d39424]" : "bg-[#5e8b62]"}`} /><div className="min-w-0"><p className="truncate text-sm font-semibold text-[#203b35]">{item.productName}</p><p className="mt-1 truncate text-xs text-[#7d8a84]">Metrc {item.metrcQuantity} · Physical {item.physicalQuantity ?? "not logged"} · {item.likelyCause}</p></div><div className="hidden text-right sm:block"><p className="text-sm font-semibold text-[#30453f]">{item.variancePercent}%</p><p className="text-xs text-[#87958e]">variance</p></div><div className="flex items-center gap-2"><StatusPill tone={statusTone(item.severity)}>{item.severity}</StatusPill><ChevronDown className={`h-4 w-4 text-[#87958e] transition-transform ${expanded === item.id ? "rotate-180" : ""}`} /></div></button>
-          {expanded === item.id && <div className="grid gap-5 bg-[#fbfcfa] px-5 pb-5 pt-1 sm:grid-cols-[1fr_0.9fr] sm:px-6 sm:pb-6"><div className="command-surface rounded-xl border border-[#dce3da] bg-white p-4"><p className="text-xs font-bold uppercase tracking-[0.12em] text-[#87958e]">Evidence timeline</p><div className="mt-3 border-l-2 border-[#dce3da] pl-4 text-xs text-[#61706b]"><div className="relative pb-3"><span className="absolute -left-[21px] top-0 h-2.5 w-2.5 rounded-full bg-[#c2413c] ring-4 ring-white" /><p className="font-semibold text-[#30453f]">Detected</p><p className="mt-1">{new Date(item.detectedAt).toLocaleString()}</p></div><div className="relative"><span className="absolute -left-[21px] top-0 h-2.5 w-2.5 rounded-full bg-[#5e8b62] ring-4 ring-white" /><p className="font-semibold text-[#30453f]">Current status: {item.status.replace("_", " ")}</p><p className="mt-1">Last updated {new Date(item.updatedAt).toLocaleString()}</p></div></div><p className="mt-5 text-xs font-bold uppercase tracking-[0.12em] text-[#87958e]">Why this is flagged</p><p className="mt-2 text-sm leading-6 text-[#41554e]">{item.likelyCause}. This operational severity is based on a {item.variancePercent}% variance and the facility’s latest available physical log.</p><div className="mt-4 grid grid-cols-3 gap-2"><div className="rounded-lg bg-[#f0f5ef] p-2.5"><p className="text-[10px] font-bold uppercase text-[#87958e]">Metrc</p><p className="mt-1 text-sm font-semibold text-[#173f3a]">{item.metrcQuantity}</p></div><div className="rounded-lg bg-[#f0f5ef] p-2.5"><p className="text-[10px] font-bold uppercase text-[#87958e]">Physical</p><p className="mt-1 text-sm font-semibold text-[#173f3a]">{item.physicalQuantity ?? "—"}</p></div><div className="rounded-lg bg-[#f0f5ef] p-2.5"><p className="text-[10px] font-bold uppercase text-[#87958e]">Units delta</p><p className="mt-1 text-sm font-semibold text-[#173f3a]">{item.varianceQuantity}</p></div></div></div><div className="space-y-3"><Label htmlFor={`resolution-${item.id}`} className="text-sm font-semibold text-[#30453f]">Resolution notes</Label><Textarea id={`resolution-${item.id}`} value={note} onChange={e => setNote(e.target.value)} className="min-h-24 border-[#ccd8cf]" placeholder="Document what was checked or corrected…" /><div className="grid grid-cols-2 gap-2"><Button onClick={() => update.mutate({ id: item.id, status: "investigating", resolutionNotes: note || undefined })} disabled={update.isPending} variant="outline" className="border-[#b8cbb9] text-[#205b35]">Investigating</Button><Button onClick={() => update.mutate({ id: item.id, status: "awaiting_lab", resolutionNotes: note || undefined })} disabled={update.isPending} variant="outline" className="border-[#b8cbb9] text-[#205b35]"><FlaskConical className="mr-1.5 h-4 w-4" />Awaiting lab</Button><Button onClick={() => update.mutate({ id: item.id, status: "other", resolutionNotes: note || undefined })} disabled={update.isPending} variant="outline" className="border-[#b8cbb9] text-[#205b35]">Other</Button><Button onClick={() => update.mutate({ id: item.id, status: "resolved", resolutionNotes: note || undefined })} disabled={update.isPending} className="bg-[#173f3a] hover:bg-[#0e2f2b]"><CheckCircle2 className="mr-1.5 h-4 w-4" />Mark resolved</Button></div></div></div>}</div>)}</div> : <div className="px-6 py-16 text-center"><CheckCircle2 className="mx-auto h-9 w-9 text-[#5e8b62]" /><h2 className="mt-3 text-lg font-semibold text-[#173f3a]">Nothing in this queue</h2><p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[#7d8a84]">When Metrc inventory and physical counts differ beyond the configured thresholds, the issue will appear here.</p></div>}</CardContent></Card>
-  </div>;
+  return (
+    <div className="motion-rise mx-auto max-w-6xl space-y-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="text-sm font-semibold text-[#356e45]">
+            Reconciliation queue
+          </p>
+          <h1 className="mt-1 text-3xl font-semibold tracking-tight text-[#173f3a]">
+            Discrepancies
+          </h1>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-[#6f7d77]">
+            Prioritize operational risk, document why it happened, and retain
+            the resolution context.
+          </p>
+        </div>
+        <Button
+          variant="outline"
+          onClick={() => void utils.discrepancies.list.invalidate()}
+          className="border-[#b8cbb9] text-[#205b35]"
+        >
+          <RefreshCw className="mr-2 h-4 w-4" />
+          Refresh
+        </Button>
+      </div>
+      <Card className="surface-lift motion-rise motion-delay-1 border-[#dce3da] bg-white shadow-[0_12px_28px_rgba(18,53,47,0.05)]">
+        <CardContent className="p-0">
+          <div className="flex flex-col gap-3 border-b border-[#e8eee8] p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
+            <div className="flex items-center gap-2">
+              <Filter className="h-4 w-4 text-[#5e8b62]" />
+              <span className="text-sm font-semibold text-[#30453f]">
+                Filter queue
+              </span>
+            </div>
+            <div className="grid grid-cols-2 gap-2 sm:flex">
+              <select
+                value={severity}
+                onChange={e => setSeverity(e.target.value as typeof severity)}
+                className="h-10 rounded-xl border border-[#ccd8cf] bg-white px-3 text-sm text-[#30453f]"
+              >
+                <option value="all">All severities</option>
+                <option value="critical">Critical</option>
+                <option value="high">High</option>
+                <option value="medium">Medium</option>
+              </select>
+              <select
+                value={sort}
+                onChange={e => setSort(e.target.value as typeof sort)}
+                className="h-10 rounded-xl border border-[#ccd8cf] bg-white px-3 text-sm text-[#30453f]"
+              >
+                <option value="severity">Sort: severity</option>
+                <option value="recent">Sort: recent</option>
+                <option value="variance">Sort: variance</option>
+              </select>
+              <select
+                value={status}
+                onChange={e => setStatus(e.target.value as typeof status)}
+                className="h-10 rounded-xl border border-[#ccd8cf] bg-white px-3 text-sm text-[#30453f]"
+              >
+                <option value="all">All statuses</option>
+                <option value="investigating">Investigating</option>
+                <option value="awaiting_lab">Awaiting Lab</option>
+                <option value="resolved">Resolved</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+          </div>
+          {list.isLoading ? (
+            <div className="p-6 text-sm text-[#7d8a84]">
+              Loading discrepancy queue…
+            </div>
+          ) : rows.length ? (
+            <div>
+              {rows.map(item => (
+                <div
+                  key={item.id}
+                  className="border-b border-[#eef1ee] last:border-0"
+                >
+                  <button
+                    onClick={() => {
+                      setExpanded(expanded === item.id ? null : item.id);
+                      setNote(item.resolutionNotes ?? "");
+                    }}
+                    className="surface-lift grid w-full grid-cols-[auto_1fr_auto_auto] items-center gap-3 px-5 py-4 text-left hover:bg-[#f7faf6] sm:px-6"
+                  >
+                    <span
+                      className={`h-2.5 w-2.5 rounded-full ${item.severity === "critical" ? "bg-[#c2413c]" : item.severity === "high" ? "bg-[#d39424]" : "bg-[#5e8b62]"}`}
+                    />
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-semibold text-[#203b35]">
+                        {item.productName}
+                      </p>
+                      <p className="mt-1 truncate text-xs text-[#7d8a84]">
+                        Metrc {item.metrcQuantity} · Physical{" "}
+                        {item.physicalQuantity ?? "not logged"} ·{" "}
+                        {item.likelyCause}
+                      </p>
+                    </div>
+                    <div className="hidden text-right sm:block">
+                      <p className="text-sm font-semibold text-[#30453f]">
+                        {item.variancePercent}%
+                      </p>
+                      <p className="text-xs text-[#87958e]">variance</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <StatusPill tone={statusTone(item.severity)}>
+                        {item.severity}
+                      </StatusPill>
+                      <ChevronDown
+                        className={`h-4 w-4 text-[#87958e] transition-transform ${expanded === item.id ? "rotate-180" : ""}`}
+                      />
+                    </div>
+                  </button>
+                  {expanded === item.id && (
+                    <div className="grid gap-5 bg-[#fbfcfa] px-5 pb-5 pt-1 sm:grid-cols-[1fr_0.9fr] sm:px-6 sm:pb-6">
+                      <div className="command-surface rounded-xl border border-[#dce3da] bg-white p-4">
+                        <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#87958e]">
+                          Evidence timeline
+                        </p>
+                        <div className="mt-3 border-l-2 border-[#dce3da] pl-4 text-xs text-[#61706b]">
+                          <div className="relative pb-3">
+                            <span className="absolute -left-[21px] top-0 h-2.5 w-2.5 rounded-full bg-[#c2413c] ring-4 ring-white" />
+                            <p className="font-semibold text-[#30453f]">
+                              Detected
+                            </p>
+                            <p className="mt-1">
+                              {new Date(item.detectedAt).toLocaleString()}
+                            </p>
+                          </div>
+                          <div className="relative">
+                            <span className="absolute -left-[21px] top-0 h-2.5 w-2.5 rounded-full bg-[#5e8b62] ring-4 ring-white" />
+                            <p className="font-semibold text-[#30453f]">
+                              Current status: {item.status.replace("_", " ")}
+                            </p>
+                            <p className="mt-1">
+                              Last updated{" "}
+                              {new Date(item.updatedAt).toLocaleString()}
+                            </p>
+                          </div>
+                        </div>
+                        <p className="mt-5 text-xs font-bold uppercase tracking-[0.12em] text-[#87958e]">
+                          Why this is flagged
+                        </p>
+                        <p className="mt-2 text-sm leading-6 text-[#41554e]">
+                          {item.likelyCause}. This operational severity is based
+                          on a {item.variancePercent}% variance and the
+                          facility’s latest available physical log.
+                        </p>
+                        <div className="mt-4 grid grid-cols-3 gap-2">
+                          <div className="rounded-lg bg-[#f0f5ef] p-2.5">
+                            <p className="text-[10px] font-bold uppercase text-[#87958e]">
+                              Metrc
+                            </p>
+                            <p className="mt-1 text-sm font-semibold text-[#173f3a]">
+                              {item.metrcQuantity}
+                            </p>
+                          </div>
+                          <div className="rounded-lg bg-[#f0f5ef] p-2.5">
+                            <p className="text-[10px] font-bold uppercase text-[#87958e]">
+                              Physical
+                            </p>
+                            <p className="mt-1 text-sm font-semibold text-[#173f3a]">
+                              {item.physicalQuantity ?? "—"}
+                            </p>
+                          </div>
+                          <div className="rounded-lg bg-[#f0f5ef] p-2.5">
+                            <p className="text-[10px] font-bold uppercase text-[#87958e]">
+                              Units delta
+                            </p>
+                            <p className="mt-1 text-sm font-semibold text-[#173f3a]">
+                              {item.varianceQuantity}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="space-y-3">
+                        <Label
+                          htmlFor={`resolution-${item.id}`}
+                          className="text-sm font-semibold text-[#30453f]"
+                        >
+                          Resolution notes
+                        </Label>
+                        <Textarea
+                          id={`resolution-${item.id}`}
+                          value={note}
+                          onChange={e => setNote(e.target.value)}
+                          className="min-h-24 border-[#ccd8cf]"
+                          placeholder="Document what was checked or corrected…"
+                        />
+                        <div className="grid grid-cols-2 gap-2">
+                          <Button
+                            onClick={() =>
+                              update.mutate({
+                                id: item.id,
+                                status: "investigating",
+                                resolutionNotes: note || undefined,
+                              })
+                            }
+                            disabled={update.isPending}
+                            variant="outline"
+                            className="border-[#b8cbb9] text-[#205b35]"
+                          >
+                            Investigating
+                          </Button>
+                          <Button
+                            onClick={() =>
+                              update.mutate({
+                                id: item.id,
+                                status: "awaiting_lab",
+                                resolutionNotes: note || undefined,
+                              })
+                            }
+                            disabled={update.isPending}
+                            variant="outline"
+                            className="border-[#b8cbb9] text-[#205b35]"
+                          >
+                            <FlaskConical className="mr-1.5 h-4 w-4" />
+                            Awaiting lab
+                          </Button>
+                          <Button
+                            onClick={() =>
+                              update.mutate({
+                                id: item.id,
+                                status: "other",
+                                resolutionNotes: note || undefined,
+                              })
+                            }
+                            disabled={update.isPending}
+                            variant="outline"
+                            className="border-[#b8cbb9] text-[#205b35]"
+                          >
+                            Other
+                          </Button>
+                          <Button
+                            onClick={() =>
+                              update.mutate({
+                                id: item.id,
+                                status: "resolved",
+                                resolutionNotes: note || undefined,
+                              })
+                            }
+                            disabled={update.isPending}
+                            className="bg-[#173f3a] hover:bg-[#0e2f2b]"
+                          >
+                            <CheckCircle2 className="mr-1.5 h-4 w-4" />
+                            Mark resolved
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="px-6 py-16 text-center">
+              <CheckCircle2 className="mx-auto h-9 w-9 text-[#5e8b62]" />
+              <h2 className="mt-3 text-lg font-semibold text-[#173f3a]">
+                Nothing in this queue
+              </h2>
+              <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[#7d8a84]">
+                When Metrc inventory and physical counts differ beyond the
+                configured thresholds, the issue will appear here.
+              </p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
 }

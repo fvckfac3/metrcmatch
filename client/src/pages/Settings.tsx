@@ -4,7 +4,17 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { trpc } from "@/lib/trpc";
-import { AlertCircle, BookOpen, CheckCircle2, Clock3, ExternalLink, KeyRound, RefreshCw, ShieldCheck, TimerReset } from "lucide-react";
+import {
+  AlertCircle,
+  BookOpen,
+  CheckCircle2,
+  Clock3,
+  ExternalLink,
+  KeyRound,
+  RefreshCw,
+  ShieldCheck,
+  TimerReset,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -28,25 +38,527 @@ export default function Settings() {
   const [oauthClientSecret, setOauthClientSecret] = useState("");
   const [hydrated, setHydrated] = useState(false);
   useEffect(() => {
-    if (facility.data && !hydrated) { setFacilityName(facility.data.name === "Facility setup required" ? "" : facility.data.name); setLicenseNumber(facility.data.licenseNumber ?? ""); setAddress(facility.data.address ?? ""); setManagerEmail(facility.data.complianceManagerEmail ?? ""); setHydrated(true); }
+    if (facility.data && !hydrated) {
+      setFacilityName(
+        facility.data.name === "Facility setup required"
+          ? ""
+          : facility.data.name
+      );
+      setLicenseNumber(facility.data.licenseNumber ?? "");
+      setAddress(facility.data.address ?? "");
+      setManagerEmail(facility.data.complianceManagerEmail ?? "");
+      setHydrated(true);
+    }
   }, [facility.data, hydrated]);
-  useEffect(() => { if (connection.data) { setAuthMethod(connection.data.authMethod); setApiBaseUrl(connection.data.apiBaseUrl); setMetrcLicense(connection.data.licenseNumber ?? ""); } }, [connection.data]);
-  const saveFacility = trpc.facility.save.useMutation({ onSuccess: () => { toast.success("Facility profile saved."); void utils.facility.current.invalidate(); }, onError: error => toast.error(error.message) });
-  const saveMetrc = trpc.metrc.saveSettings.useMutation({ onSuccess: () => { toast.success("Metrc settings saved securely."); setUserApiKey(""); setIntegratorApiKey(""); setOauthClientId(""); setOauthClientSecret(""); void utils.metrc.settings.invalidate(); }, onError: error => toast.error(error.message) });
-  const test = trpc.metrc.test.useMutation({ onSuccess: () => { toast.success("Metrc connection succeeded."); void utils.metrc.settings.invalidate(); }, onError: error => toast.error(error.message) });
-  const sync = trpc.metrc.syncNow.useMutation({ onSuccess: data => { toast.success(`Sync completed: ${data.inventoryItems} inventory records checked.`); void utils.metrc.history.invalidate(); void utils.metrc.settings.invalidate(); void utils.discrepancies.dashboard.invalidate(); }, onError: error => toast.error(error.message) });
-  const schedule = trpc.metrc.scheduleNightly.useMutation({ onSuccess: () => { toast.success("Nightly sync scheduled."); void utils.metrc.settings.invalidate(); }, onError: error => toast.error(error.message) });
-  const disableSchedule = trpc.metrc.disableSchedule.useMutation({ onSuccess: () => { toast.success("Nightly sync disabled."); void utils.metrc.settings.invalidate(); }, onError: error => toast.error(error.message) });
-  const statusTone = connection.data?.connectionStatus === "connected" ? "green" : connection.data?.connectionStatus === "error" ? "red" : "neutral";
-  const settingsPayload = { authMethod, apiBaseUrl, licenseNumber: metrcLicense, ...(userApiKey ? { userApiKey } : {}), ...(integratorApiKey ? { integratorApiKey } : {}), ...(oauthClientId ? { oauthClientId } : {}), ...(oauthClientSecret ? { oauthClientSecret } : {}) };
+  useEffect(() => {
+    if (connection.data) {
+      setAuthMethod(connection.data.authMethod);
+      setApiBaseUrl(connection.data.apiBaseUrl);
+      setMetrcLicense(connection.data.licenseNumber ?? "");
+    }
+  }, [connection.data]);
+  const saveFacility = trpc.facility.save.useMutation({
+    onSuccess: () => {
+      toast.success("Facility profile saved.");
+      void utils.facility.current.invalidate();
+    },
+    onError: error => toast.error(error.message),
+  });
+  const saveMetrc = trpc.metrc.saveSettings.useMutation({
+    onSuccess: () => {
+      toast.success("Metrc settings saved securely.");
+      setUserApiKey("");
+      setIntegratorApiKey("");
+      setOauthClientId("");
+      setOauthClientSecret("");
+      void utils.metrc.settings.invalidate();
+    },
+    onError: error => toast.error(error.message),
+  });
+  const test = trpc.metrc.test.useMutation({
+    onSuccess: () => {
+      toast.success("Metrc connection succeeded.");
+      void utils.metrc.settings.invalidate();
+    },
+    onError: error => toast.error(error.message),
+  });
+  const sync = trpc.metrc.syncNow.useMutation({
+    onSuccess: data => {
+      toast.success(
+        `Sync completed: ${data.inventoryItems} inventory records checked.`
+      );
+      void utils.metrc.history.invalidate();
+      void utils.metrc.settings.invalidate();
+      void utils.discrepancies.dashboard.invalidate();
+    },
+    onError: error => toast.error(error.message),
+  });
+  const schedule = trpc.metrc.scheduleNightly.useMutation({
+    onSuccess: () => {
+      toast.success("Nightly sync scheduled.");
+      void utils.metrc.settings.invalidate();
+    },
+    onError: error => toast.error(error.message),
+  });
+  const disableSchedule = trpc.metrc.disableSchedule.useMutation({
+    onSuccess: () => {
+      toast.success("Nightly sync disabled.");
+      void utils.metrc.settings.invalidate();
+    },
+    onError: error => toast.error(error.message),
+  });
+  const statusTone =
+    connection.data?.connectionStatus === "connected"
+      ? "green"
+      : connection.data?.connectionStatus === "error"
+        ? "red"
+        : "neutral";
+  const settingsPayload = {
+    authMethod,
+    apiBaseUrl,
+    licenseNumber: metrcLicense,
+    ...(userApiKey ? { userApiKey } : {}),
+    ...(integratorApiKey ? { integratorApiKey } : {}),
+    ...(oauthClientId ? { oauthClientId } : {}),
+    ...(oauthClientSecret ? { oauthClientSecret } : {}),
+  };
 
-  return <div className="motion-rise mx-auto max-w-6xl space-y-6"><div><p className="text-sm font-semibold text-[#356e45]">Configuration</p><h1 className="mt-1 text-3xl font-semibold tracking-tight text-[#173f3a]">Facility & Metrc</h1><p className="mt-2 max-w-3xl text-sm leading-6 text-[#6f7d77]">Set your facility metadata, connect read-only Metrc credentials, and review sync activity. Credentials are never rendered after they are saved.</p></div>
-    <div className="grid gap-6 xl:grid-cols-2"><Card className="surface-lift motion-rise motion-delay-1 border-[#dce3da] bg-white shadow-[0_12px_28px_rgba(18,53,47,0.05)]"><CardContent className="p-5 sm:p-6"><div className="flex items-center justify-between"><div><h2 className="text-lg font-semibold text-[#173f3a]">Facility profile</h2><p className="mt-1 text-sm text-[#7d8a84]">Included in report metadata.</p></div><ShieldCheck className="h-5 w-5 text-[#356e45]" /></div><div className="mt-6 space-y-4"><div className="space-y-2"><Label htmlFor="facility-name">Facility name</Label><Input id="facility-name" value={facilityName} onChange={e => setFacilityName(e.target.value)} className="h-11 border-[#ccd8cf]" placeholder="Your Oregon dispensary" /></div><div className="grid gap-4 sm:grid-cols-2"><div className="space-y-2"><Label htmlFor="facility-license">OLCC license number</Label><Input id="facility-license" value={licenseNumber} onChange={e => setLicenseNumber(e.target.value)} className="h-11 border-[#ccd8cf]" /></div><div className="space-y-2"><Label htmlFor="manager-email">Compliance manager email</Label><Input id="manager-email" type="email" value={managerEmail} onChange={e => setManagerEmail(e.target.value)} className="h-11 border-[#ccd8cf]" placeholder="manager@example.com" /></div></div><div className="space-y-2"><Label htmlFor="facility-address">Facility address</Label><Input id="facility-address" value={address} onChange={e => setAddress(e.target.value)} className="h-11 border-[#ccd8cf]" /></div><Button onClick={() => saveFacility.mutate({ name: facilityName, licenseNumber: licenseNumber || null, address: address || null, timezone: "America/Los_Angeles", complianceManagerEmail: managerEmail || null, onboardingComplete: Boolean(facilityName && licenseNumber) })} disabled={saveFacility.isPending} className="mt-2 bg-[#173f3a] hover:bg-[#0e2f2b]">{saveFacility.isPending ? "Saving…" : "Save facility profile"}</Button></div></CardContent></Card>
-      <Card className="surface-lift motion-rise motion-delay-1 border-[#dce3da] bg-white shadow-[0_12px_28px_rgba(18,53,47,0.05)]"><CardContent className="p-5 sm:p-6"><div className="flex items-start justify-between"><div><h2 className="text-lg font-semibold text-[#173f3a]">Metrc connection</h2><p className="mt-1 text-sm text-[#7d8a84]">Oregon API credentials are encrypted at rest.</p></div><StatusPill tone={statusTone}>{connection.data?.connectionStatus?.replace("_", " ") ?? "not connected"}</StatusPill></div><div className="mt-6 space-y-4"><div className="grid grid-cols-2 gap-2 rounded-2xl bg-[#e7efe5] p-1.5 shadow-[inset_0_1px_2px_rgba(18,53,47,0.07)]"><button onClick={() => setAuthMethod("api_key")} className={`rounded-lg px-3 py-2.5 text-sm font-semibold ${authMethod === "api_key" ? "bg-white text-[#173f3a] shadow-sm" : "text-[#708078]"}`}>API keys</button><button onClick={() => setAuthMethod("oauth")} className={`rounded-lg px-3 py-2.5 text-sm font-semibold ${authMethod === "oauth" ? "bg-white text-[#173f3a] shadow-sm" : "text-[#708078]"}`}>OAuth credentials</button></div><div className="grid gap-4 sm:grid-cols-2"><div className="space-y-2"><Label htmlFor="metrc-license">Metrc license number</Label><Input id="metrc-license" value={metrcLicense} onChange={e => setMetrcLicense(e.target.value)} className="h-11 border-[#ccd8cf]" /></div><div className="space-y-2"><Label htmlFor="metrc-base">API base URL</Label><Input id="metrc-base" value={apiBaseUrl} onChange={e => setApiBaseUrl(e.target.value)} className="h-11 border-[#ccd8cf]" /></div></div>{authMethod === "api_key" ? <div className="grid gap-4 sm:grid-cols-2"><div className="space-y-2"><Label htmlFor="integrator-key">Integrator API key {connection.data?.hasIntegratorApiKey && <span className="font-normal text-[#5e8b62]">(saved)</span>}</Label><Input id="integrator-key" type="password" value={integratorApiKey} onChange={e => setIntegratorApiKey(e.target.value)} className="h-11 border-[#ccd8cf]" placeholder={connection.data?.hasIntegratorApiKey ? "Leave blank to keep saved key" : "Required for connection"} /></div><div className="space-y-2"><Label htmlFor="user-key">User API key {connection.data?.hasUserApiKey && <span className="font-normal text-[#5e8b62]">(saved)</span>}</Label><Input id="user-key" type="password" value={userApiKey} onChange={e => setUserApiKey(e.target.value)} className="h-11 border-[#ccd8cf]" placeholder={connection.data?.hasUserApiKey ? "Leave blank to keep saved key" : "Required for connection"} /></div></div> : <div className="grid gap-4 sm:grid-cols-2"><div className="space-y-2"><Label htmlFor="oauth-client">OAuth client ID {connection.data?.hasOauthClientId && <span className="font-normal text-[#5e8b62]">(saved)</span>}</Label><Input id="oauth-client" type="password" value={oauthClientId} onChange={e => setOauthClientId(e.target.value)} className="h-11 border-[#ccd8cf]" /></div><div className="space-y-2"><Label htmlFor="oauth-secret">OAuth client secret {connection.data?.hasOauthClientSecret && <span className="font-normal text-[#5e8b62]">(saved)</span>}</Label><Input id="oauth-secret" type="password" value={oauthClientSecret} onChange={e => setOauthClientSecret(e.target.value)} className="h-11 border-[#ccd8cf]" /></div></div>}<div className="flex flex-wrap gap-2 pt-1"><Button onClick={() => saveMetrc.mutate(settingsPayload)} disabled={saveMetrc.isPending} className="bg-[#173f3a] hover:bg-[#0e2f2b]"><KeyRound className="mr-2 h-4 w-4" />Save credentials</Button><Button onClick={() => test.mutate()} disabled={test.isPending || !connection.data} variant="outline" className="border-[#b8cbb9] text-[#205b35]"><CheckCircle2 className="mr-2 h-4 w-4" />{test.isPending ? "Testing…" : "Test connection"}</Button><Button onClick={() => sync.mutate()} disabled={sync.isPending || !connection.data} variant="outline" className="border-[#b8cbb9] text-[#205b35]"><RefreshCw className={`mr-2 h-4 w-4 ${sync.isPending ? "animate-spin" : ""}`} />Sync now</Button></div></div></CardContent></Card>
+  return (
+    <div className="motion-rise mx-auto max-w-6xl space-y-6">
+      <div>
+        <p className="text-sm font-semibold text-[#356e45]">Configuration</p>
+        <h1 className="mt-1 text-3xl font-semibold tracking-tight text-[#173f3a]">
+          Facility & Metrc
+        </h1>
+        <p className="mt-2 max-w-3xl text-sm leading-6 text-[#6f7d77]">
+          Set your facility metadata, connect read-only Metrc credentials, and
+          review sync activity. Credentials are never rendered after they are
+          saved.
+        </p>
+      </div>
+      <div className="grid gap-6 xl:grid-cols-2">
+        <Card className="surface-lift motion-rise motion-delay-1 border-[#dce3da] bg-white shadow-[0_12px_28px_rgba(18,53,47,0.05)]">
+          <CardContent className="p-5 sm:p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-semibold text-[#173f3a]">
+                  Facility profile
+                </h2>
+                <p className="mt-1 text-sm text-[#7d8a84]">
+                  Included in report metadata.
+                </p>
+              </div>
+              <ShieldCheck className="h-5 w-5 text-[#356e45]" />
+            </div>
+            <div className="mt-6 space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="facility-name">Facility name</Label>
+                <Input
+                  id="facility-name"
+                  value={facilityName}
+                  onChange={e => setFacilityName(e.target.value)}
+                  className="h-11 border-[#ccd8cf]"
+                  placeholder="Your Oregon dispensary"
+                />
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="facility-license">OLCC license number</Label>
+                  <Input
+                    id="facility-license"
+                    value={licenseNumber}
+                    onChange={e => setLicenseNumber(e.target.value)}
+                    className="h-11 border-[#ccd8cf]"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="manager-email">
+                    Compliance manager email
+                  </Label>
+                  <Input
+                    id="manager-email"
+                    type="email"
+                    value={managerEmail}
+                    onChange={e => setManagerEmail(e.target.value)}
+                    className="h-11 border-[#ccd8cf]"
+                    placeholder="manager@example.com"
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="facility-address">Facility address</Label>
+                <Input
+                  id="facility-address"
+                  value={address}
+                  onChange={e => setAddress(e.target.value)}
+                  className="h-11 border-[#ccd8cf]"
+                />
+              </div>
+              <Button
+                onClick={() =>
+                  saveFacility.mutate({
+                    name: facilityName,
+                    licenseNumber: licenseNumber || null,
+                    address: address || null,
+                    timezone: "America/Los_Angeles",
+                    complianceManagerEmail: managerEmail || null,
+                    onboardingComplete: Boolean(facilityName && licenseNumber),
+                  })
+                }
+                disabled={saveFacility.isPending}
+                className="mt-2 bg-[#173f3a] hover:bg-[#0e2f2b]"
+              >
+                {saveFacility.isPending ? "Saving…" : "Save facility profile"}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="surface-lift motion-rise motion-delay-1 border-[#dce3da] bg-white shadow-[0_12px_28px_rgba(18,53,47,0.05)]">
+          <CardContent className="p-5 sm:p-6">
+            <div className="flex items-start justify-between">
+              <div>
+                <h2 className="text-lg font-semibold text-[#173f3a]">
+                  Metrc connection
+                </h2>
+                <p className="mt-1 text-sm text-[#7d8a84]">
+                  Oregon API credentials are encrypted at rest.
+                </p>
+              </div>
+              <StatusPill tone={statusTone}>
+                {connection.data?.connectionStatus?.replace("_", " ") ??
+                  "not connected"}
+              </StatusPill>
+            </div>
+            <div className="mt-6 space-y-4">
+              <div className="grid grid-cols-2 gap-2 rounded-2xl bg-[#e7efe5] p-1.5 shadow-[inset_0_1px_2px_rgba(18,53,47,0.07)]">
+                <button
+                  onClick={() => setAuthMethod("api_key")}
+                  className={`rounded-lg px-3 py-2.5 text-sm font-semibold ${authMethod === "api_key" ? "bg-white text-[#173f3a] shadow-sm" : "text-[#708078]"}`}
+                >
+                  API keys
+                </button>
+                <button
+                  onClick={() => setAuthMethod("oauth")}
+                  className={`rounded-lg px-3 py-2.5 text-sm font-semibold ${authMethod === "oauth" ? "bg-white text-[#173f3a] shadow-sm" : "text-[#708078]"}`}
+                >
+                  OAuth credentials
+                </button>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="metrc-license">Metrc license number</Label>
+                  <Input
+                    id="metrc-license"
+                    value={metrcLicense}
+                    onChange={e => setMetrcLicense(e.target.value)}
+                    className="h-11 border-[#ccd8cf]"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="metrc-base">API base URL</Label>
+                  <Input
+                    id="metrc-base"
+                    value={apiBaseUrl}
+                    onChange={e => setApiBaseUrl(e.target.value)}
+                    className="h-11 border-[#ccd8cf]"
+                  />
+                </div>
+              </div>
+              {authMethod === "api_key" ? (
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="integrator-key">
+                      Integrator API key{" "}
+                      {connection.data?.hasIntegratorApiKey && (
+                        <span className="font-normal text-[#5e8b62]">
+                          (saved)
+                        </span>
+                      )}
+                    </Label>
+                    <Input
+                      id="integrator-key"
+                      type="password"
+                      value={integratorApiKey}
+                      onChange={e => setIntegratorApiKey(e.target.value)}
+                      className="h-11 border-[#ccd8cf]"
+                      placeholder={
+                        connection.data?.hasIntegratorApiKey
+                          ? "Leave blank to keep saved key"
+                          : "Required for connection"
+                      }
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="user-key">
+                      User API key{" "}
+                      {connection.data?.hasUserApiKey && (
+                        <span className="font-normal text-[#5e8b62]">
+                          (saved)
+                        </span>
+                      )}
+                    </Label>
+                    <Input
+                      id="user-key"
+                      type="password"
+                      value={userApiKey}
+                      onChange={e => setUserApiKey(e.target.value)}
+                      className="h-11 border-[#ccd8cf]"
+                      placeholder={
+                        connection.data?.hasUserApiKey
+                          ? "Leave blank to keep saved key"
+                          : "Required for connection"
+                      }
+                    />
+                  </div>
+                </div>
+              ) : (
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="oauth-client">
+                      OAuth client ID{" "}
+                      {connection.data?.hasOauthClientId && (
+                        <span className="font-normal text-[#5e8b62]">
+                          (saved)
+                        </span>
+                      )}
+                    </Label>
+                    <Input
+                      id="oauth-client"
+                      type="password"
+                      value={oauthClientId}
+                      onChange={e => setOauthClientId(e.target.value)}
+                      className="h-11 border-[#ccd8cf]"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="oauth-secret">
+                      OAuth client secret{" "}
+                      {connection.data?.hasOauthClientSecret && (
+                        <span className="font-normal text-[#5e8b62]">
+                          (saved)
+                        </span>
+                      )}
+                    </Label>
+                    <Input
+                      id="oauth-secret"
+                      type="password"
+                      value={oauthClientSecret}
+                      onChange={e => setOauthClientSecret(e.target.value)}
+                      className="h-11 border-[#ccd8cf]"
+                    />
+                  </div>
+                </div>
+              )}
+              <div className="flex flex-wrap gap-2 pt-1">
+                <Button
+                  onClick={() => saveMetrc.mutate(settingsPayload)}
+                  disabled={saveMetrc.isPending}
+                  className="bg-[#173f3a] hover:bg-[#0e2f2b]"
+                >
+                  <KeyRound className="mr-2 h-4 w-4" />
+                  Save credentials
+                </Button>
+                <Button
+                  onClick={() => test.mutate()}
+                  disabled={test.isPending || !connection.data}
+                  variant="outline"
+                  className="border-[#b8cbb9] text-[#205b35]"
+                >
+                  <CheckCircle2 className="mr-2 h-4 w-4" />
+                  {test.isPending ? "Testing…" : "Test connection"}
+                </Button>
+                <Button
+                  onClick={() => sync.mutate()}
+                  disabled={sync.isPending || !connection.data}
+                  variant="outline"
+                  className="border-[#b8cbb9] text-[#205b35]"
+                >
+                  <RefreshCw
+                    className={`mr-2 h-4 w-4 ${sync.isPending ? "animate-spin" : ""}`}
+                  />
+                  Sync now
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+      <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
+        <Card className="surface-lift motion-rise motion-delay-1 border-[#dce3da] bg-white shadow-[0_12px_28px_rgba(18,53,47,0.05)]">
+          <CardContent className="p-0">
+            <div className="flex items-center justify-between border-b border-[#e8eee8] p-5 sm:p-6">
+              <div>
+                <h2 className="text-lg font-semibold text-[#173f3a]">
+                  Sync history
+                </h2>
+                <p className="mt-1 text-sm text-[#7d8a84]">
+                  The last 10 sync attempts.
+                </p>
+              </div>
+              <Clock3 className="h-5 w-5 text-[#5e8b62]" />
+            </div>
+            {history.data?.length ? (
+              <div>
+                {history.data.map(syncItem => (
+                  <div
+                    key={syncItem.id}
+                    className="grid grid-cols-[1fr_auto] gap-4 border-b border-[#eef1ee] px-5 py-4 last:border-0 sm:px-6"
+                  >
+                    <div>
+                      <p className="text-sm font-semibold text-[#203b35]">
+                        {syncItem.trigger === "scheduled"
+                          ? "Scheduled sync"
+                          : "Manual sync"}
+                      </p>
+                      <p className="mt-1 text-xs text-[#7d8a84]">
+                        {new Date(syncItem.startedAt).toLocaleString()} ·{" "}
+                        {syncItem.inventoryItems} inventory ·{" "}
+                        {syncItem.salesRecords} sales · {syncItem.testRecords}{" "}
+                        test records
+                      </p>
+                      {syncItem.errorSummary && (
+                        <p className="mt-1 text-xs text-[#a13d36]">
+                          {syncItem.errorSummary}
+                        </p>
+                      )}
+                    </div>
+                    <StatusPill
+                      tone={
+                        syncItem.status === "success"
+                          ? "green"
+                          : syncItem.status === "failed"
+                            ? "red"
+                            : "yellow"
+                      }
+                    >
+                      {syncItem.status}
+                    </StatusPill>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="px-6 py-12 text-center">
+                <RefreshCw className="mx-auto h-7 w-7 text-[#9daba4]" />
+                <p className="mt-3 text-sm font-semibold text-[#173f3a]">
+                  No syncs yet
+                </p>
+                <p className="mt-1 text-sm text-[#7d8a84]">
+                  Save credentials and run a manual sync to begin.
+                </p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+        <Card className="surface-lift motion-rise motion-delay-2 border-[#dce3da] bg-[#e8f1e7] shadow-[0_12px_28px_rgba(18,53,47,0.04)]">
+          <CardContent className="p-5 sm:p-6">
+            <TimerReset className="h-6 w-6 text-[#356e45]" />
+            <h2 className="mt-4 text-lg font-semibold text-[#173f3a]">
+              Nightly reconciliation
+            </h2>
+            <p className="mt-2 text-sm leading-6 text-[#61706b]">
+              Run an off-peak daily sync at 2:00 AM Pacific after you publish
+              the application. The callback is idempotent and reuses the secure
+              sync process.
+            </p>
+            {connection.data?.scheduleCronTaskUid ? (
+              <Button
+                onClick={() => disableSchedule.mutate()}
+                disabled={disableSchedule.isPending}
+                variant="outline"
+                className="mt-5 border-[#b8cbb9] text-[#205b35]"
+              >
+                Disable nightly sync
+              </Button>
+            ) : (
+              <Button
+                onClick={() => schedule.mutate({ cron: "0 0 10 * * *" })}
+                disabled={
+                  !import.meta.env.PROD ||
+                  schedule.isPending ||
+                  !connection.data
+                }
+                className="mt-5 bg-[#173f3a] hover:bg-[#0e2f2b]"
+              >
+                {import.meta.env.PROD
+                  ? "Schedule 2 AM Pacific sync"
+                  : "Publish to activate schedule"}
+              </Button>
+            )}
+            <p className="mt-3 flex gap-2 text-xs leading-5 text-[#7d8a84]">
+              <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+              Email delivery remains inactive until a sending provider and
+              verified sender are configured.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+      <Card className="surface-lift motion-rise motion-delay-3 border-[#dce3da] bg-[#eaf3e9] shadow-[0_12px_28px_rgba(18,53,47,0.04)]">
+        <CardContent className="p-5 sm:p-6">
+          <div className="flex items-start gap-3">
+            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white text-[#356e45]">
+              <BookOpen className="h-5 w-5" />
+            </span>
+            <div>
+              <h2 className="text-lg font-semibold text-[#173f3a]">
+                Oregon OLCC onboarding
+              </h2>
+              <p className="mt-1 text-sm leading-6 text-[#61706b]">
+                Use MetrcMatch as a reconciliation workpaper: connect the
+                facility, sync Metrc records, log physical reality, review
+                variances, and retain a prepared report. MetrcMatch flags a
+                variance when it exceeds 5 units or 5%; it labels greater than
+                20% as Critical, greater than 10% as High, and lesser than 10%
+                as Medium. These are application review thresholds, not a
+                substitute for current OLCC requirements; verify official
+                guidance before acting.
+              </p>
+              <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                <div className="rounded-xl bg-white/80 p-3">
+                  <p className="text-xs font-bold text-[#173f3a]">
+                    1 · Identify
+                  </p>
+                  <p className="mt-1 text-xs leading-5 text-[#61706b]">
+                    Save the facility name and OLCC license number.
+                  </p>
+                </div>
+                <div className="rounded-xl bg-white/80 p-3">
+                  <p className="text-xs font-bold text-[#173f3a]">
+                    2 · Reconcile
+                  </p>
+                  <p className="mt-1 text-xs leading-5 text-[#61706b]">
+                    Sync Metrc and record counts, losses, and lab outcomes.
+                  </p>
+                </div>
+                <div className="rounded-xl bg-white/80 p-3">
+                  <p className="text-xs font-bold text-[#173f3a]">3 · Verify</p>
+                  <p className="mt-1 text-xs leading-5 text-[#61706b]">
+                    Review flagged variances and prepare an evidence report.
+                  </p>
+                </div>
+              </div>
+              <div className="mt-4 flex flex-wrap gap-3 text-xs font-semibold">
+                <a
+                  href="https://www.oregon.gov/olcc/pages/ommp_cts_guide.aspx"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1.5 text-[#205b35] underline-offset-4 hover:underline"
+                >
+                  OLCC CTS guide <ExternalLink className="h-3.5 w-3.5" />
+                </a>
+                <a
+                  href="https://www.oregon.gov/olcc/marijuana/pages/default.aspx"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1.5 text-[#205b35] underline-offset-4 hover:underline"
+                >
+                  OLCC marijuana resources{" "}
+                  <ExternalLink className="h-3.5 w-3.5" />
+                </a>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
-    <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]"><Card className="surface-lift motion-rise motion-delay-1 border-[#dce3da] bg-white shadow-[0_12px_28px_rgba(18,53,47,0.05)]"><CardContent className="p-0"><div className="flex items-center justify-between border-b border-[#e8eee8] p-5 sm:p-6"><div><h2 className="text-lg font-semibold text-[#173f3a]">Sync history</h2><p className="mt-1 text-sm text-[#7d8a84]">The last 10 sync attempts.</p></div><Clock3 className="h-5 w-5 text-[#5e8b62]" /></div>{history.data?.length ? <div>{history.data.map(syncItem => <div key={syncItem.id} className="grid grid-cols-[1fr_auto] gap-4 border-b border-[#eef1ee] px-5 py-4 last:border-0 sm:px-6"><div><p className="text-sm font-semibold text-[#203b35]">{syncItem.trigger === "scheduled" ? "Scheduled sync" : "Manual sync"}</p><p className="mt-1 text-xs text-[#7d8a84]">{new Date(syncItem.startedAt).toLocaleString()} · {syncItem.inventoryItems} inventory · {syncItem.salesRecords} sales · {syncItem.testRecords} test records</p>{syncItem.errorSummary && <p className="mt-1 text-xs text-[#a13d36]">{syncItem.errorSummary}</p>}</div><StatusPill tone={syncItem.status === "success" ? "green" : syncItem.status === "failed" ? "red" : "yellow"}>{syncItem.status}</StatusPill></div>)}</div> : <div className="px-6 py-12 text-center"><RefreshCw className="mx-auto h-7 w-7 text-[#9daba4]" /><p className="mt-3 text-sm font-semibold text-[#173f3a]">No syncs yet</p><p className="mt-1 text-sm text-[#7d8a84]">Save credentials and run a manual sync to begin.</p></div>}</CardContent></Card>
-      <Card className="surface-lift motion-rise motion-delay-2 border-[#dce3da] bg-[#e8f1e7] shadow-[0_12px_28px_rgba(18,53,47,0.04)]"><CardContent className="p-5 sm:p-6"><TimerReset className="h-6 w-6 text-[#356e45]" /><h2 className="mt-4 text-lg font-semibold text-[#173f3a]">Nightly reconciliation</h2><p className="mt-2 text-sm leading-6 text-[#61706b]">Run an off-peak daily sync at 2:00 AM Pacific after you publish the application. The callback is idempotent and reuses the secure sync process.</p>{connection.data?.scheduleCronTaskUid ? <Button onClick={() => disableSchedule.mutate()} disabled={disableSchedule.isPending} variant="outline" className="mt-5 border-[#b8cbb9] text-[#205b35]">Disable nightly sync</Button> : <Button onClick={() => schedule.mutate({ cron: "0 0 10 * * *" })} disabled={!import.meta.env.PROD || schedule.isPending || !connection.data} className="mt-5 bg-[#173f3a] hover:bg-[#0e2f2b]">{import.meta.env.PROD ? "Schedule 2 AM Pacific sync" : "Publish to activate schedule"}</Button>}<p className="mt-3 flex gap-2 text-xs leading-5 text-[#7d8a84]"><AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" />Email delivery remains inactive until a sending provider and verified sender are configured.</p></CardContent></Card>
-    </div>
-    <Card className="surface-lift motion-rise motion-delay-3 border-[#dce3da] bg-[#eaf3e9] shadow-[0_12px_28px_rgba(18,53,47,0.04)]"><CardContent className="p-5 sm:p-6"><div className="flex items-start gap-3"><span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white text-[#356e45]"><BookOpen className="h-5 w-5" /></span><div><h2 className="text-lg font-semibold text-[#173f3a]">Oregon OLCC onboarding</h2><p className="mt-1 text-sm leading-6 text-[#61706b]">Use MetrcMatch as a reconciliation workpaper: connect the facility, sync Metrc records, log physical reality, review variances, and retain a prepared report. MetrcMatch flags a variance when it exceeds 5 units or 5%; it labels greater than 20% as Critical, greater than 10% as High, and lesser than 10% as Medium. These are application review thresholds, not a substitute for current OLCC requirements; verify official guidance before acting.</p><div className="mt-4 grid gap-3 sm:grid-cols-3"><div className="rounded-xl bg-white/80 p-3"><p className="text-xs font-bold text-[#173f3a]">1 · Identify</p><p className="mt-1 text-xs leading-5 text-[#61706b]">Save the facility name and OLCC license number.</p></div><div className="rounded-xl bg-white/80 p-3"><p className="text-xs font-bold text-[#173f3a]">2 · Reconcile</p><p className="mt-1 text-xs leading-5 text-[#61706b]">Sync Metrc and record counts, losses, and lab outcomes.</p></div><div className="rounded-xl bg-white/80 p-3"><p className="text-xs font-bold text-[#173f3a]">3 · Verify</p><p className="mt-1 text-xs leading-5 text-[#61706b]">Review flagged variances and prepare an evidence report.</p></div></div><div className="mt-4 flex flex-wrap gap-3 text-xs font-semibold"><a href="https://www.oregon.gov/olcc/pages/ommp_cts_guide.aspx" target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-[#205b35] underline-offset-4 hover:underline">OLCC CTS guide <ExternalLink className="h-3.5 w-3.5" /></a><a href="https://www.oregon.gov/olcc/marijuana/pages/default.aspx" target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-[#205b35] underline-offset-4 hover:underline">OLCC marijuana resources <ExternalLink className="h-3.5 w-3.5" /></a></div></div></div></CardContent></Card>
-  </div>;
+  );
 }

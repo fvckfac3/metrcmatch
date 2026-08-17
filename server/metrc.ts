@@ -28,44 +28,71 @@ type MetrcPackage = {
 function connectionClient(connection: MetrcConnection) {
   const integratorKey = decryptSecret(connection.encryptedIntegratorApiKey);
   const userKey = decryptSecret(connection.encryptedUserApiKey);
-  if (!integratorKey || !userKey) throw new Error("Both the Metrc integrator API key and user API key are required before connecting.");
+  if (!integratorKey || !userKey)
+    throw new Error(
+      "Both the Metrc integrator API key and user API key are required before connecting."
+    );
   return axios.create({
     baseURL: connection.apiBaseUrl,
-    timeout: Number(ENV.metrcRequestTimeoutMs || 15_000),
+    timeout: ENV.metrcRequestTimeoutMs,
     auth: { username: integratorKey, password: userKey },
     headers: { Accept: "application/json" },
   });
 }
 
 function licenseNumber(connection: MetrcConnection) {
-  if (!connection.licenseNumber) throw new Error("An Oregon Metrc license number is required before syncing.");
+  if (!connection.licenseNumber)
+    throw new Error(
+      "An Oregon Metrc license number is required before syncing."
+    );
   return connection.licenseNumber;
 }
 
 export async function testMetrcConnection(connection: MetrcConnection) {
   const client = connectionClient(connection);
-  await client.get("/packages/v2/active", { params: { licenseNumber: licenseNumber(connection), pageSize: 1 } });
+  await client.get("/packages/v2/active", {
+    params: { licenseNumber: licenseNumber(connection), pageSize: 1 },
+  });
   return true;
 }
 
-export async function fetchMetrcInventory(connection: MetrcConnection, lastSyncedAt: Date | null) {
+export async function fetchMetrcInventory(
+  connection: MetrcConnection,
+  lastSyncedAt: Date | null
+) {
   const client = connectionClient(connection);
   const response = await client.get<MetrcPackage[]>("/packages/v2/active", {
     params: {
       licenseNumber: licenseNumber(connection),
-      ...(lastSyncedAt ? { lastModifiedStart: new Date(lastSyncedAt.getTime() - 5 * 60_000).toISOString() } : {}),
+      ...(lastSyncedAt
+        ? {
+            lastModifiedStart: new Date(
+              lastSyncedAt.getTime() - 5 * 60_000
+            ).toISOString(),
+          }
+        : {}),
     },
   });
-  return response.data.map(item => ({
-    metrcPackageId: String(item.Id ?? item.Label ?? ""),
-    packageLabel: item.Label ?? null,
-    productName: item.Item?.Name ?? item.ItemName ?? item.ProductName ?? "Unnamed Metrc package",
-    sku: item.Item?.ProductCategoryName ?? item.Item?.StrainName ?? null,
-    quantity: Number(item.Quantity ?? 0),
-    unitOfMeasure: item.UnitOfMeasureName ?? "units",
-    testingStatus: item.LabTestingState ?? "Unknown",
-    sourceLastModifiedAt: item.LastModified ? new Date(item.LastModified) : null,
-  })).filter(item => item.metrcPackageId.length > 0 && Number.isFinite(item.quantity));
+  return response.data
+    .map(item => ({
+      metrcPackageId: String(item.Id ?? item.Label ?? ""),
+      packageLabel: item.Label ?? null,
+      productName:
+        item.Item?.Name ??
+        item.ItemName ??
+        item.ProductName ??
+        "Unnamed Metrc package",
+      sku: item.Item?.ProductCategoryName ?? item.Item?.StrainName ?? null,
+      quantity: Number(item.Quantity ?? 0),
+      unitOfMeasure: item.UnitOfMeasureName ?? "units",
+      testingStatus: item.LabTestingState ?? "Unknown",
+      sourceLastModifiedAt: item.LastModified
+        ? new Date(item.LastModified)
+        : null,
+    }))
+    .filter(
+      item => item.metrcPackageId.length > 0 && Number.isFinite(item.quantity)
+    );
 }
 
 export async function fetchMetrcSalesCount(connection: MetrcConnection) {
@@ -82,26 +109,44 @@ export async function fetchMetrcSalesCount(connection: MetrcConnection) {
     });
     return Array.isArray(response.data) ? response.data.length : 0;
   } catch (error) {
-    const detail = error instanceof Error ? error.message : "Metrc sales request failed.";
+    const detail =
+      error instanceof Error ? error.message : "Metrc sales request failed.";
     throw new Error(`Metrc sales request failed: ${detail}`);
   }
 }
 
-export async function fetchMetrcTestingResults(connection: MetrcConnection, lastSyncedAt: Date | null) {
+export async function fetchMetrcTestingResults(
+  connection: MetrcConnection,
+  lastSyncedAt: Date | null
+) {
   const client = connectionClient(connection);
   const response = await client.get<MetrcLabResult[]>("/labtests/v2/results", {
     params: {
       licenseNumber: licenseNumber(connection),
-      ...(lastSyncedAt ? { lastModifiedStart: new Date(lastSyncedAt.getTime() - 5 * 60_000).toISOString() } : {}),
+      ...(lastSyncedAt
+        ? {
+            lastModifiedStart: new Date(
+              lastSyncedAt.getTime() - 5 * 60_000
+            ).toISOString(),
+          }
+        : {}),
     },
   });
-  return (Array.isArray(response.data) ? response.data : []).map(result => ({
-    metrcPackageId: String(result.PackageId ?? result.PackageLabel ?? ""),
-    testStatus: String(result.TestStateName ?? result.TestStatusName ?? "Unknown"),
-    receivedAt: result.ResultsReleaseDateTime ? new Date(result.ResultsReleaseDateTime) : null,
-    sourceLastModifiedAt: result.LastModified ? new Date(result.LastModified) : null,
-    rawPayload: JSON.stringify(result),
-  })).filter(result => result.metrcPackageId.length > 0);
+  return (Array.isArray(response.data) ? response.data : [])
+    .map(result => ({
+      metrcPackageId: String(result.PackageId ?? result.PackageLabel ?? ""),
+      testStatus: String(
+        result.TestStateName ?? result.TestStatusName ?? "Unknown"
+      ),
+      receivedAt: result.ResultsReleaseDateTime
+        ? new Date(result.ResultsReleaseDateTime)
+        : null,
+      sourceLastModifiedAt: result.LastModified
+        ? new Date(result.LastModified)
+        : null,
+      rawPayload: JSON.stringify(result),
+    }))
+    .filter(result => result.metrcPackageId.length > 0);
 }
 
 export function countTestingRecords(records: Array<{ testingStatus: string }>) {

@@ -134,18 +134,12 @@
       "indexes": {
         "discrepancies_facility_package_unique": {
           "name": "discrepancies_facility_package_unique",
-          "columns": [
-            "facilityId",
-            "metrcPackageId"
-          ],
+          "columns": ["facilityId", "metrcPackageId"],
           "isUnique": true
         },
         "discrepancies_facility_severity_idx": {
           "name": "discrepancies_facility_severity_idx",
-          "columns": [
-            "facilityId",
-            "severity"
-          ],
+          "columns": ["facilityId", "severity"],
           "isUnique": false
         }
       },
@@ -153,9 +147,7 @@
       "compositePrimaryKeys": {
         "discrepancies_id": {
           "name": "discrepancies_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -238,9 +230,7 @@
       "compositePrimaryKeys": {
         "facilities_id": {
           "name": "facilities_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -290,17 +280,12 @@
       "indexes": {
         "facilityMembers_facility_user_unique": {
           "name": "facilityMembers_facility_user_unique",
-          "columns": [
-            "facilityId",
-            "userId"
-          ],
+          "columns": ["facilityId", "userId"],
           "isUnique": true
         },
         "facilityMembers_user_idx": {
           "name": "facilityMembers_user_idx",
-          "columns": [
-            "userId"
-          ],
+          "columns": ["userId"],
           "isUnique": false
         }
       },
@@ -308,9 +293,7 @@
       "compositePrimaryKeys": {
         "facilityMembers_id": {
           "name": "facilityMembers_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -412,18 +395,12 @@
       "indexes": {
         "inventorySnapshots_facility_package_unique": {
           "name": "inventorySnapshots_facility_package_unique",
-          "columns": [
-            "facilityId",
-            "metrcPackageId"
-          ],
+          "columns": ["facilityId", "metrcPackageId"],
           "isUnique": true
         },
         "inventorySnapshots_facility_product_idx": {
           "name": "inventorySnapshots_facility_product_idx",
-          "columns": [
-            "facilityId",
-            "productName"
-          ],
+          "columns": ["facilityId", "productName"],
           "isUnique": false
         }
       },
@@ -431,9 +408,7 @@
       "compositePrimaryKeys": {
         "inventorySnapshots_id": {
           "name": "inventorySnapshots_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -557,16 +532,12 @@
       "indexes": {
         "metrcConnections_facility_unique": {
           "name": "metrcConnections_facility_unique",
-          "columns": [
-            "facilityId"
-          ],
+          "columns": ["facilityId"],
           "isUnique": true
         },
         "metrcConnections_schedule_idx": {
           "name": "metrcConnections_schedule_idx",
-          "columns": [
-            "scheduleCronTaskUid"
-          ],
+          "columns": ["scheduleCronTaskUid"],
           "isUnique": false
         }
       },
@@ -574,9 +545,7 @@
       "compositePrimaryKeys": {
         "metrcConnections_id": {
           "name": "metrcConnections_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -663,10 +632,7 @@
       "indexes": {
         "metrcSyncs_facility_started_idx": {
           "name": "metrcSyncs_facility_started_idx",
-          "columns": [
-            "facilityId",
-            "startedAt"
-          ],
+          "columns": ["facilityId", "startedAt"],
           "isUnique": false
         }
       },
@@ -674,9 +640,7 @@
       "compositePrimaryKeys": {
         "metrcSyncs_id": {
           "name": "metrcSyncs_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -754,10 +718,7 @@
       "indexes": {
         "notificationEvents_facility_created_idx": {
           "name": "notificationEvents_facility_created_idx",
-          "columns": [
-            "facilityId",
-            "createdAt"
-          ],
+          "columns": ["facilityId", "createdAt"],
           "isUnique": false
         }
       },
@@ -765,9 +726,7 @@
       "compositePrimaryKeys": {
         "notificationEvents_id": {
           "name": "notificationEvents_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -894,18 +853,12 @@
       "indexes": {
         "physicalLogs_facility_date_idx": {
           "name": "physicalLogs_facility_date_idx",
-          "columns": [
-            "facilityId",
-            "occurredAt"
-          ],
+          "columns": ["facilityId", "occurredAt"],
           "isUnique": false
         },
         "physicalLogs_facility_package_idx": {
           "name": "physicalLogs_facility_package_idx",
-          "columns": [
-            "facilityId",
-            "metrcPackageId"
-          ],
+          "columns": ["facilityId", "metrcPackageId"],
           "isUnique": false
         }
       },
@@ -913,9 +866,7 @@
       "compositePrimaryKeys": {
         "physicalLogs_id": {
           "name": "physicalLogs_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -1034,10 +985,7 @@
       "indexes": {
         "reconciliationReports_facility_created_idx": {
           "name": "reconciliationReports_facility_created_idx",
-          "columns": [
-            "facilityId",
-            "createdAt"
-          ],
+          "columns": ["facilityId", "createdAt"],
           "isUnique": false
         }
       },
@@ -1045,9 +993,7 @@
       "compositePrimaryKeys": {
         "reconciliationReports_id": {
           "name": "reconciliationReports_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -1137,17 +1083,13 @@
       "compositePrimaryKeys": {
         "users_id": {
           "name": "users_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {
         "users_openId_unique": {
           "name": "users_openId_unique",
-          "columns": [
-            "openId"
-          ]
+          "columns": ["openId"]
         }
       },
       "checkConstraint": {}

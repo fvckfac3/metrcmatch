@@ -8,34 +8,38 @@ The requested domain model is portable to PostgreSQL, but the initialized Manus 
 
 The production PostgreSQL equivalent is represented by the following normalized tables. All timestamps should be stored as `timestamptz` in UTC, quantities as `numeric(14,3)`, percentages as `numeric(8,2)`, and enum values as `CHECK` constraints or PostgreSQL enums.
 
-| Table | Purpose | Key fields |
-|---|---|---|
-| `users` | Authenticated application users | `id`, `email`, `password_hash`, `name`, `role`, timestamps |
-| `facilities` | Oregon retail facility metadata | `id`, `name`, `license_number`, `address`, `timezone`, `compliance_manager_email` |
-| `facility_members` | Facility-scoped authorization | `facility_id`, `user_id`, `role` |
-| `metrc_connections` | Encrypted Metrc credentials and connection state | `facility_id`, `auth_method`, encrypted API keys, `api_base_url`, `last_synced_at` |
-| `metrc_syncs` | Audit trail for inventory, sales, and testing pulls | `facility_id`, `trigger`, `status`, record counts, timestamps, error summary |
-| `inventory_snapshots` | Latest Metrc inventory packages | `facility_id`, `metrc_package_id`, `product_name`, `sku`, `quantity`, `testing_status` |
-| `physical_logs` | Counts, damages, discards, and lab results | `facility_id`, `created_by_user_id`, `type`, `quantity`, `reason`, `test_status`, timestamps |
-| `discrepancies` | Variances and resolution state | `facility_id`, package ID, Metrc/physical quantities, variance, severity, status, notes |
-| `reconciliation_reports` | Prepared period reports | `facility_id`, preparer, period, counts, severity totals |
-| `notification_events` | Critical/high/red escalation history | `facility_id`, event type, recipient, delivery status, detail |
+| Table                    | Purpose                                             | Key fields                                                                                   |
+| ------------------------ | --------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| `users`                  | Authenticated application users                     | `id`, `email`, `password_hash`, `name`, `role`, timestamps                                   |
+| `facilities`             | Oregon retail facility metadata                     | `id`, `name`, `license_number`, `address`, `timezone`, `compliance_manager_email`            |
+| `facility_members`       | Facility-scoped authorization                       | `facility_id`, `user_id`, `role`                                                             |
+| `metrc_connections`      | Encrypted Metrc credentials and connection state    | `facility_id`, `auth_method`, encrypted API keys, `api_base_url`, `last_synced_at`           |
+| `metrc_syncs`            | Audit trail for inventory, sales, and testing pulls | `facility_id`, `trigger`, `status`, record counts, timestamps, error summary                 |
+| `inventory_snapshots`    | Latest Metrc inventory packages                     | `facility_id`, `metrc_package_id`, `product_name`, `sku`, `quantity`, `testing_status`       |
+| `physical_logs`          | Counts, damages, discards, and lab results          | `facility_id`, `created_by_user_id`, `type`, `quantity`, `reason`, `test_status`, timestamps |
+| `discrepancies`          | Variances and resolution state                      | `facility_id`, package ID, Metrc/physical quantities, variance, severity, status, notes      |
+| `reconciliation_reports` | Prepared period reports                             | `facility_id`, preparer, period, counts, severity totals                                     |
+| `notification_events`    | Critical/high/red escalation history                | `facility_id`, event type, recipient, delivery status, detail                                |
 
 The runtime schema is in `drizzle/schema.ts`, and the initial migration is in `drizzle/0001_stiff_malcolm_colcord.sql`. The password-hash field is present in the provisioned `users` table and represented in the TypeScript schema as `passwordHash`.
 
 ## Express route structure
 
-| Route | Auth | Behavior |
-|---|---|---|
-| `POST /api/auth/signup` | Public | Validates email/name/password, hashes the password with bcrypt, creates a local user, and issues the project session cookie. |
-| `POST /api/auth/login` | Public | Verifies the bcrypt hash and issues the project session cookie. |
-| `POST /api/metrc/sync` | Session | Resolves the caller’s facility and runs the same inventory/sales/testing sync service used by the typed UI procedure. |
-| `POST /api/scheduled/metrc-sync` | Heartbeat session | Runs the scheduled facility sync with cron-session validation. |
-| `GET /api/reports/export` | Session | Streams PDF or CSV reconciliation exports. |
-| `/api/trpc/*` | Session per procedure | Typed endpoints for facility settings, logs, discrepancies, reports, and Metrc connection management. |
-| `/api/oauth/callback` | OAuth callback | Existing managed Manus OAuth flow. |
+| Route                            | Auth                  | Behavior                                                                                                                                            |
+| -------------------------------- | --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ |
+| `POST /api/auth/signup`          | Public                | Validates email/name/password, hashes the password with bcrypt, creates a local user, and issues the project session cookie.                        |
+| `POST /api/auth/login`           | Public                | Verifies the bcrypt hash and issues the project session cookie.                                                                                     |
+| `POST /api/metrc/sync`           | Session               | Resolves the caller’s facility and runs the same inventory/sales/testing sync service used by the typed UI procedure.                               |
+| `GET /api/metrc/status`          | Session               | Returns facility-scoped connection state, inventory count, weekly reconciliation count, active severity totals, trend data, and derived audit risk. |
+| `POST /api/logs/create`          | Session               | Validates and records a physical count, damage/discard event, or lab result, then refreshes reconciliation.                                         |
+| `GET /api/discrepancies/list`    | Session               | Returns facility-scoped discrepancies with optional `status` and `severity` filters.                                                                |
+| `GET /api/reports/generate`      | Session               | Validates `start_date`, `end_date`, and `format=pdf                                                                                                 | csv`, then streams a date-range reconciliation export. |
+| `POST /api/scheduled/metrc-sync` | Heartbeat session     | Runs the scheduled facility sync with cron-session validation.                                                                                      |
+| `GET /api/reports/export`        | Session               | Streams PDF or CSV reconciliation exports.                                                                                                          |
+| `/api/trpc/*`                    | Session per procedure | Typed endpoints for facility settings, logs, discrepancies, reports, and Metrc connection management.                                               |
+| `/api/oauth/callback`            | OAuth callback        | Existing managed Manus OAuth flow.                                                                                                                  |
 
-The REST route implementations are in `server/routes/auth.ts` and `server/routes/metrc.ts`. The existing typed procedures remain the preferred browser contract because they provide end-to-end types and facility authorization.
+The REST route implementations are grouped by domain under `server/routes/`, and shared request authorization and safe error mapping live in `server/http.ts`. The existing typed procedures remain the preferred browser contract because they provide end-to-end types and facility authorization.
 
 ## `POST /api/auth/signup`
 
@@ -113,4 +117,4 @@ The application does not hardcode API keys. The optional Resend variables are in
 
 ## API security notes
 
-All Metrc access is facility-scoped. API keys are encrypted before persistence and are never returned to the browser after save. Signup and login use bcrypt password hashes and the project’s existing signed HTTP-only session cookie. Rate limiting, CSRF protection for non-cookie clients, and a managed PostgreSQL deployment should be added before exposing the local-account endpoints to the public internet.
+All Metrc access is facility-scoped. API keys are encrypted before persistence and are never returned to the browser after save. Signup and login use bcrypt password hashes and the project’s existing signed HTTP-only session cookie. Authenticated REST routes return a stable `{ error, code }` response, and validation failures additionally return safe field details. Rate limiting, CSRF protection for non-cookie clients, and a managed PostgreSQL deployment should be added before exposing the local-account endpoints to the public internet.

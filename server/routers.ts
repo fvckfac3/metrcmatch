@@ -13,7 +13,10 @@ export const appRouter = router({
   auth: router({
     me: publicProcedure.query(opts => opts.ctx.user),
     logout: publicProcedure.mutation(({ ctx }) => {
-      ctx.res.clearCookie(COOKIE_NAME, { ...getSessionCookieOptions(ctx.req), maxAge: -1 });
+      ctx.res.clearCookie(COOKIE_NAME, {
+        ...getSessionCookieOptions(ctx.req),
+        maxAge: -1,
+      });
       return { success: true } as const;
     }),
   }),

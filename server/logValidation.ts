@@ -1,7 +1,14 @@
 import { z } from "zod";
 
-export const logModeSchema = z.enum(["count", "damage", "discard", "test_result"]);
-export const packageInputSchema = z.object({ metrcPackageId: z.string().trim().min(1).max(128) });
+export const logModeSchema = z.enum([
+  "count",
+  "damage",
+  "discard",
+  "test_result",
+]);
+export const packageInputSchema = z.object({
+  metrcPackageId: z.string().trim().min(1).max(128),
+});
 
 export const countLogSchema = packageInputSchema.extend({
   type: z.literal("count"),
@@ -22,5 +29,9 @@ export const testLogSchema = packageInputSchema.extend({
   receivedAt: z.coerce.date(),
 });
 
-export const createLogSchema = z.discriminatedUnion("type", [countLogSchema, damageLogSchema, testLogSchema]);
+export const createLogSchema = z.discriminatedUnion("type", [
+  countLogSchema,
+  damageLogSchema,
+  testLogSchema,
+]);
 export type CreateLogInput = z.infer<typeof createLogSchema>;

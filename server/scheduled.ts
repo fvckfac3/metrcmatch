@@ -6,7 +6,8 @@ import { runMetrcSync } from "./services";
 export async function scheduledMetrcSync(req: Request, res: Response) {
   try {
     const user = await sdk.authenticateRequest(req);
-    if (!user.isCron || !user.taskUid) return res.status(403).json({ error: "cron-only" });
+    if (!user.isCron || !user.taskUid)
+      return res.status(403).json({ error: "cron-only" });
     const target = await db.getFacilityByScheduleTask(user.taskUid);
     if (!target) return res.json({ ok: true, skipped: "orphan" });
     const result = await runMetrcSync(target.facility.id, "scheduled");

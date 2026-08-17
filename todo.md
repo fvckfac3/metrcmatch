@@ -27,10 +27,7 @@
 
 - [x] The managed scaffold currently uses Manus OAuth and a MySQL/TiDB-compatible Drizzle adapter. The requested PostgreSQL table names and domain model will be documented as a portable contract while runtime persistence remains on the provisioned adapter unless the project is explicitly migrated to PostgreSQL.
 - [x] Email alert credentials were not configured because the previous secrets request was rejected; alert events remain safely suppressed until a provider is configured.
-> 
-> Note: the items above are new scope requested after the initial application implementation and are intentionally retained as project history.
-> 
-> 
+  > Note: the items above are new scope requested after the initial application implementation and are intentionally retained as project history.
 - [x] Replace the hardcoded dashboard trend series with persisted sync/reconciliation history.
 - [x] Add discrepancy sorting and a visible resolution timeline.
 - [x] Add an Oregon OLCC onboarding explainer with official source links and threshold guidance.
@@ -68,3 +65,14 @@
 - [x] Add restrained depth/3D cues where they improve orientation without reducing audit readability.
 - [x] Refine dashboard, physical logging, discrepancy, settings, and report page interactions and empty states.
 - [x] Verify key routes at desktop and mobile sizes, then save a visual refinement checkpoint.
+- [x] Audit and reorganize project modules, names, imports, and dependencies for maintainability.
+- [x] Refactor shared backend error handling and response mapping for consistent API behavior.
+- [x] Improve high-value query/request efficiency and document caching recommendations.
+- [x] Strengthen unit and endpoint coverage around refactored code and failure paths.
+- [x] Create a deployment-ready README with setup, configuration, migration, test, build, and publish instructions.
+- [x] Verify environment examples, production build, tests, type checks, and save a refactor checkpoint.
+- [x] Move legacy pnpm configuration into the supported workspace configuration to eliminate pnpm warnings.
+- [x] Add focused test coverage for shared REST authorization and error mapping behavior.
+- [x] Review managed environment guidance against the runtime configuration contract and update it if needed.
+- [x] Add shared authorization tests for authenticated, cron, and authentication-failure request contexts.
+- [x] Add a managed-environment reference artifact that matches the runtime configuration contract without checking in secrets.
