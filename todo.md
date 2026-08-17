@@ -39,3 +39,10 @@
 - [x] Add endpoint coverage for Metrc connection failure responses.
 - [x] Verify the UI at a mobile viewport and record the result.
 - [x] Save a checkpoint after the latest REST/auth integration and verification fixes.
+- [x] Build a mobile-responsive React physical logging form for count, damage/discard, and lab-test results.
+- [x] Add synced-Metrc product search and autocomplete with keyboard-accessible selection.
+- [x] Add client and server validation for quantities, reasons, test status, dates, and required product fields.
+- [x] Add an authenticated `POST /api/logs/create` endpoint that persists physical logs and triggers reconciliation.
+- [x] Add clear submitting, success confirmation, and error states without inventing product data.
+- [x] Add Vitest coverage for the log endpoint and validation contract.
+- [x] Verify the logging UI at desktop and mobile viewports, then save a checkpoint.

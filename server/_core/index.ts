@@ -12,6 +12,7 @@ import { registerReportExportRoutes } from "../reportExport";
 import { scheduledMetrcSync } from "../scheduled";
 import { registerAuthRoutes } from "../routes/auth";
 import { registerMetrcRoutes } from "../routes/metrc";
+import { registerLogRoutes } from "../routes/logs";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -35,6 +36,7 @@ async function startServer() {
   registerOAuthRoutes(app);
   registerAuthRoutes(app);
   registerMetrcRoutes(app);
+  registerLogRoutes(app);
   registerReportExportRoutes(app);
   app.post("/api/scheduled/metrc-sync", scheduledMetrcSync);
   app.use("/api/trpc", createExpressMiddleware({ router: appRouter, createContext }));

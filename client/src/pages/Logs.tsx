@@ -23,30 +23,41 @@ export default function Logs() {
   const [testStatus, setTestStatus] = useState<"passed" | "failed">("passed");
   const [receivedAt, setReceivedAt] = useState(() => new Date().toISOString().slice(0, 10));
   const [query, setQuery] = useState("");
+  const [pending, setPending] = useState(false);
+  const [confirmed, setConfirmed] = useState<string | null>(null);
   const utils = trpc.useUtils();
   const logs = trpc.logs.list.useQuery({ query });
-  const reset = () => { setProduct(""); setQuantity(""); setLocation(""); setNotes(""); };
+  const reset = () => { setProduct(""); setQuantity(""); setLocation(""); setNotes(""); setQuery(""); };
   const refresh = () => { void utils.logs.list.invalidate(); void utils.discrepancies.dashboard.invalidate(); void utils.discrepancies.list.invalidate(); };
-  const count = trpc.logs.createCount.useMutation({ onSuccess: () => { toast.success("Physical count saved. Reconciliation was refreshed."); reset(); refresh(); }, onError: e => toast.error(e.message) });
-  const damage = trpc.logs.createDamage.useMutation({ onSuccess: () => { toast.success(`${discard ? "Discard" : "Damage"} entry saved.`); reset(); refresh(); }, onError: e => toast.error(e.message) });
-  const test = trpc.logs.createTest.useMutation({ onSuccess: data => { toast.success(data.mismatch ? "Test result saved; the result needs review against Metrc." : "Lab result saved."); reset(); refresh(); }, onError: e => toast.error(e.message) });
-  const pending = count.isPending || damage.isPending || test.isPending;
 
-  const submit = (event: React.FormEvent) => {
+  const submit = async (event: React.FormEvent) => {
     event.preventDefault();
+    setConfirmed(null);
     if (!product) return toast.error("Select a product from the synced Metrc inventory.");
-    if (mode === "count") {
-      if (!quantity || !location.trim()) return toast.error("Enter both a count and location.");
-      count.mutate({ metrcPackageId: product, quantity: Number(quantity), location: location.trim() });
-    } else if (mode === "damage") {
-      if (!quantity) return toast.error("Enter the affected quantity.");
-      damage.mutate({ metrcPackageId: product, quantity: Number(quantity), reason, notes: notes || undefined, type: discard ? "discard" : "damage" });
-    } else {
-      test.mutate({ metrcPackageId: product, testStatus, receivedAt: new Date(`${receivedAt}T12:00:00`) });
+    const numericQuantity = Number(quantity);
+    if (mode === "count" && (!Number.isFinite(numericQuantity) || numericQuantity < 0 || !location.trim())) return toast.error("Enter a valid count and location.");
+    if (mode === "damage" && (!Number.isFinite(numericQuantity) || numericQuantity <= 0)) return toast.error("Enter an affected quantity greater than zero.");
+    if (mode === "test" && !receivedAt) return toast.error("Choose the date the result was received.");
+    const body = mode === "count" ? { type: "count", metrcPackageId: product, quantity: numericQuantity, location: location.trim() } : mode === "damage" ? { type: discard ? "discard" : "damage", metrcPackageId: product, quantity: numericQuantity, reason, notes: notes.trim() || undefined } : { type: "test_result", metrcPackageId: product, testStatus, receivedAt: new Date(`${receivedAt}T12:00:00`).toISOString() };
+    setPending(true);
+    try {
+      const response = await fetch("/api/logs/create", { method: "POST", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify(body) });
+      const result = await response.json() as { success?: boolean; mismatch?: boolean; timestamp?: string; error?: string };
+      if (!response.ok) throw new Error(result.error ?? "Unable to save physical log.");
+      const message = mode === "test" && result.mismatch ? "Lab result saved; review the mismatch against Metrc." : mode === "count" ? "Physical count saved and reconciliation refreshed." : `${discard ? "Discard" : "Damage"} entry saved.`;
+      setConfirmed(message);
+      toast.success(message);
+      reset();
+      refresh();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Unable to save physical log.");
+    } finally {
+      setPending(false);
     }
   };
 
   return <div className="mx-auto max-w-6xl space-y-6"><div><p className="text-sm font-semibold text-[#356e45]">Staff workspace</p><h1 className="mt-1 text-3xl font-semibold tracking-tight text-[#173f3a]">Log physical reality</h1><p className="mt-2 max-w-2xl text-sm leading-6 text-[#6f7d77]">Designed for a fast, clear entry at the point of count. Timestamps are recorded automatically.</p></div>
+    {confirmed && <div role="status" className="flex items-start gap-3 rounded-2xl border border-[#b8cbb9] bg-[#eaf4e8] px-4 py-3 text-sm font-medium text-[#205b35]"><CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" /><div><p>Saved successfully</p><p className="mt-0.5 font-normal text-[#52625d]">{confirmed} The system timestamped this entry automatically.</p></div></div>}
     <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]"><Card className="border-[#dce3da] bg-white shadow-[0_12px_28px_rgba(18,53,47,0.05)]"><CardContent className="p-4 sm:p-6"><div className="grid grid-cols-3 gap-2 rounded-xl bg-[#f0f5ef] p-1.5"><button onClick={() => setMode("count")} className={`rounded-lg px-2 py-3 text-xs font-semibold transition-colors ${mode === "count" ? "bg-white text-[#173f3a] shadow-sm" : "text-[#708078] hover:text-[#173f3a]"}`}>Count</button><button onClick={() => setMode("damage")} className={`rounded-lg px-2 py-3 text-xs font-semibold transition-colors ${mode === "damage" ? "bg-white text-[#173f3a] shadow-sm" : "text-[#708078] hover:text-[#173f3a]"}`}>Damage / discard</button><button onClick={() => setMode("test")} className={`rounded-lg px-2 py-3 text-xs font-semibold transition-colors ${mode === "test" ? "bg-white text-[#173f3a] shadow-sm" : "text-[#708078] hover:text-[#173f3a]"}`}>Lab result</button></div>
         <form onSubmit={submit} className="mt-6 space-y-5">
           {mode === "count" && <div className="mb-2 rounded-xl bg-[#eaf4e8] p-3 text-sm text-[#356e45]"><ClipboardCheck className="mr-2 inline h-4 w-4" />Record the current physical quantity at this location.</div>}
