@@ -51,3 +51,9 @@
 - [x] Persist detected discrepancy results and clear resolved variances safely.
 - [x] Add authenticated `GET /api/discrepancies/list` with facility scoping and status/severity filters.
 - [x] Add discrepancy engine and endpoint tests, run type checks, and save a checkpoint.
+- [x] Add authenticated `GET /api/metrc/status` and dashboard summary data contracts.
+- [x] Build live summary cards for sync status, products, weekly reconciliations, discrepancy severities, and audit status.
+- [x] Build a sortable discrepancy list by severity, date, and product.
+- [x] Add persisted discrepancy trend chart data and responsive chart presentation.
+- [x] Add Sync now, Generate report, and Review discrepancies actions with loading and error states.
+- [x] Verify dashboard desktop/mobile rendering, add tests, and save a checkpoint.
