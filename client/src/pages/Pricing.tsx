@@ -10,7 +10,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { useState } from "react";
-import { useLocation } from "wouter";
+import { Link, useLocation } from "wouter";
 
 const plans = [
   {
@@ -247,6 +247,23 @@ export default function Pricing() {
             </p>
           </div>
         </div>
+        <p className="mt-6 text-center text-xs leading-5 text-[#61706b]">
+          By starting a trial, you agree to the{" "}
+          <Link
+            href="/terms"
+            className="font-semibold text-[#356e45] underline underline-offset-2"
+          >
+            Terms of Service
+          </Link>{" "}
+          and acknowledge the{" "}
+          <Link
+            href="/privacy"
+            className="font-semibold text-[#356e45] underline underline-offset-2"
+          >
+            Privacy Policy
+          </Link>
+          .
+        </p>
       </main>
     </div>
   );

@@ -94,3 +94,9 @@
 - [x] Add user-visible error feedback when the Stripe billing portal cannot be opened.
 - [x] Document current plan-capacity presentation and defer multi-facility/license enforcement until the facility-group model exists.
 - [x] Normalize MySQL insert IDs so automatic facility provisioning creates valid memberships for signed-in billing and entitlement checks.
+- [x] Write a comprehensive README covering product scope, architecture, setup, configuration, billing, testing, operations, and deployment guidance.
+- [x] Add a proprietary private-use license and reference it from the project documentation.
+- [x] Reconcile package metadata and repository references with the proprietary private-use license.
+- [ ] Validate the documentation and push the README/license update to the private GitHub repository.
+- [x] Draft standard Terms of Service and Privacy Policy documents appropriate to MetrcMatch’s data and billing flows.
+- [ ] Add public in-application links to the Terms of Service and Privacy Policy, then validate and push the complete documentation update.

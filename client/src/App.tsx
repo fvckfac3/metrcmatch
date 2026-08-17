@@ -17,6 +17,8 @@ const Reports = lazy(() => import("./pages/Reports"));
 const Settings = lazy(() => import("./pages/Settings"));
 const Pricing = lazy(() => import("./pages/Pricing"));
 const Billing = lazy(() => import("./pages/Billing"));
+const Terms = lazy(() => import("./pages/Terms"));
+const Privacy = lazy(() => import("./pages/Privacy"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 function PageFallback() {
@@ -106,6 +108,16 @@ function Router() {
         <AuthenticatedPage>
           <Billing />
         </AuthenticatedPage>
+      </Route>
+      <Route path="/terms">
+        <Suspense fallback={<PageFallback />}>
+          <Terms />
+        </Suspense>
+      </Route>
+      <Route path="/privacy">
+        <Suspense fallback={<PageFallback />}>
+          <Privacy />
+        </Suspense>
       </Route>
       <Route path="/workspace">
         <ProtectedPage>

@@ -1,0 +1,58 @@
+# MetrcMatch Private-Use License
+
+**Version 1.0 — Copyright © 2026 MetrcMatch. All rights reserved.**
+
+> **Draft for legal review.** This license is a working proprietary private-use license drafted for this repository. It is not legal advice. A qualified attorney should review it before commercial reliance or broader distribution.
+
+## 1. Grant of limited rights
+
+Subject to this license, the copyright holder grants each authorized recipient a limited, non-exclusive, non-transferable, non-sublicensable, and revocable right to access, copy, run, and modify the software solely for the recipient’s own internal, private evaluation, development, and operational use.
+
+No rights are granted to use the software for the benefit of an unaffiliated third party, to provide the software as a hosted or managed service, or to distribute it outside the authorized private environment without the copyright holder’s prior written permission.
+
+## 2. Restrictions
+
+Except where the copyright holder has provided prior written permission, no recipient may:
+
+1. Publish, distribute, disclose, sublicense, sell, rent, lease, transfer, or otherwise make the software or any derivative work available to a third party.
+2. Use the software to build, operate, market, or provide a competing product or service.
+3. Remove, obscure, or alter proprietary notices, trademarks, copyright notices, or license terms.
+4. Circumvent technical access controls or permit unauthorized access to the repository, software, credentials, hosted environment, or related services.
+5. Reverse engineer, decompile, or disassemble the software except to the limited extent that applicable law prohibits this restriction.
+6. Use the software or its documentation to make unapproved claims about regulatory compliance, integrations, performance, or customer outcomes.
+
+## 3. Ownership
+
+The software, documentation, source code, visual design, trademarks, trade secrets, and all related intellectual-property rights remain exclusively owned by the copyright holder and its licensors. No ownership interest is transferred under this license. Feedback may be used by the copyright holder without restriction or compensation, provided that doing so does not disclose the recipient’s confidential information.
+
+## 4. Confidentiality
+
+The software and non-public repository content are confidential. Authorized recipients must protect them using at least reasonable care and may disclose them only to personnel or contractors with a legitimate need to know who are bound by written confidentiality obligations at least as protective as these terms.
+
+## 5. Third-party components
+
+The software may include third-party dependencies that are subject to their own license terms. Nothing in this license limits rights that a recipient may have under an applicable third-party open-source license, but those third-party terms do not grant any right to the proprietary portions of MetrcMatch.
+
+## 6. Compliance and operational responsibility
+
+MetrcMatch is an operational reconciliation tool and does not provide legal, regulatory, accounting, or compliance advice. Each recipient is solely responsible for validating records, maintaining required documentation, configuring access securely, and satisfying all obligations applicable to its operations.
+
+## 7. Disclaimer of warranties
+
+TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, THE SOFTWARE AND DOCUMENTATION ARE PROVIDED **“AS IS”** AND **“AS AVAILABLE”**, WITHOUT WARRANTIES OF ANY KIND, WHETHER EXPRESS, IMPLIED, OR STATUTORY. THIS INCLUDES WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, TITLE, NON-INFRINGEMENT, ACCURACY, AVAILABILITY, SECURITY, OR REGULATORY SUITABILITY.
+
+## 8. Limitation of liability
+
+TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, THE COPYRIGHT HOLDER AND ITS LICENSORS WILL NOT BE LIABLE FOR INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, EXEMPLARY, OR PUNITIVE DAMAGES, OR FOR LOST PROFITS, REVENUE, DATA, GOODWILL, OR BUSINESS INTERRUPTION, ARISING FROM OR RELATED TO THE SOFTWARE OR THIS LICENSE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
+
+## 9. Termination
+
+This license terminates automatically if a recipient breaches any of its terms. The copyright holder may also terminate this license at any time by written notice. On termination, the recipient must stop using the software and promptly delete all proprietary copies under its control, except one archival copy retained solely to satisfy a legal-recordkeeping obligation.
+
+## 10. General terms
+
+This license is the complete agreement regarding the software license and supersedes prior discussions about the same subject. If a provision is unenforceable, the remaining provisions remain in effect to the extent permitted by law. A waiver is effective only if in writing and signed by the copyright holder. Assignment by a recipient is prohibited without prior written consent.
+
+## 11. Contact
+
+For permissions, commercial licensing, or questions regarding these terms, contact the MetrcMatch repository owner through the authorized private channel.

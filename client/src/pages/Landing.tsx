@@ -21,7 +21,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { toast } from "sonner";
-import { useLocation } from "wouter";
+import { Link, useLocation } from "wouter";
 
 const features = [
   {
@@ -492,10 +492,26 @@ export default function Landing() {
       </main>
       <footer className="border-t border-[#dce8dc] bg-[#f8fbf6]">
         <div className="mx-auto flex max-w-7xl flex-col gap-3 px-5 py-8 text-sm text-[#718178] sm:flex-row sm:items-center sm:justify-between sm:px-8">
-          <p>
-            © {new Date().getFullYear()} MetrcMatch. Reconciliation workflow
-            support for Oregon operators.
-          </p>
+          <div className="space-y-2">
+            <p>
+              © {new Date().getFullYear()} MetrcMatch. Reconciliation workflow
+              support for Oregon operators.
+            </p>
+            <div className="flex flex-wrap gap-x-4 gap-y-2 text-xs font-semibold">
+              <Link
+                href="/terms"
+                className="rounded-md text-[#356e45] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5e8b62]"
+              >
+                Terms of Service
+              </Link>
+              <Link
+                href="/privacy"
+                className="rounded-md text-[#356e45] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5e8b62]"
+              >
+                Privacy Policy
+              </Link>
+            </div>
+          </div>
           <button
             onClick={openWorkspace}
             className="rounded-md font-semibold text-[#356e45] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5e8b62]"
