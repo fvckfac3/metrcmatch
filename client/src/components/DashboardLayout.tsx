@@ -1,4 +1,5 @@
 import { useAuth } from "@/_core/hooks/useAuth";
+import { BrandMark } from "@/components/BrandLockup";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -211,10 +212,10 @@ function DashboardLayoutContent({
               </button>
               {!isCollapsed && (
                 <div className="flex min-w-0 items-center gap-2.5">
-                  <span className="grid h-8 w-8 place-items-center rounded-xl bg-[#173f3a] text-white">
-                    <ShieldCheck className="h-4 w-4" />
+                  <span className="grid h-8 w-8 place-items-center overflow-hidden rounded-xl bg-[#173f3a] p-0.5">
+                    <BrandMark className="h-full w-full" />
                   </span>
-                  <span className="truncate text-base font-semibold tracking-tight text-[#173f3a]">
+                  <span className="brand-wordmark truncate text-[#173f3a]">
                     MetrcMatch
                   </span>
                 </div>

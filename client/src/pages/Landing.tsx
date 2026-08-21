@@ -6,6 +6,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
+import { BrandLockup } from "@/components/BrandLockup";
 import { startLogin } from "@/const";
 import {
   ArrowRight,
@@ -112,17 +113,7 @@ export default function Landing() {
             aria-label="MetrcMatch home"
             className="flex items-center gap-3 rounded-xl text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5e8b62]"
           >
-            <span className="grid h-10 w-10 place-items-center rounded-2xl bg-[#173f3a] text-white shadow-[0_8px_20px_rgba(23,63,58,0.18)]">
-              <ShieldCheck className="h-5 w-5" />
-            </span>
-            <span>
-              <span className="block text-base font-extrabold tracking-tight">
-                MetrcMatch
-              </span>
-              <span className="mono-meta block text-[10px] uppercase tracking-[0.15em] text-[#829188]">
-                Oregon operations
-              </span>
-            </span>
+            <BrandLockup />
           </button>
           <nav className="hidden items-center gap-7 text-sm font-semibold text-[#5b6d63] md:flex">
             <a

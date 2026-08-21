@@ -128,6 +128,21 @@
     font-family: "DM Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
     letter-spacing: -0.02em;
   }
+  .brand-wordmark {
+    font-family: "Manrope", ui-sans-serif, system-ui, sans-serif;
+    font-size: 1rem;
+    font-weight: 800;
+    letter-spacing: -0.055em;
+    line-height: 1;
+  }
+  .brand-descriptor {
+    font-family: "DM Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.625rem;
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    line-height: 1.35;
+    text-transform: uppercase;
+  }
   .command-surface {
     background: linear-gradient(
       135deg,
