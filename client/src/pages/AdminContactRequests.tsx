@@ -1,9 +1,28 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { trpc } from "@/lib/trpc";
-import { CheckCircle2, Inbox, LockKeyhole, RefreshCw } from "lucide-react";
+import {
+  CheckCircle2,
+  Eraser,
+  FlaskConical,
+  Inbox,
+  LockKeyhole,
+  RefreshCw,
+} from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 type RequestStatus = "new" | "in_review" | "closed";
@@ -32,6 +51,8 @@ export default function AdminContactRequests() {
   const { user } = useAuth();
   const [filter, setFilter] = useState<StatusFilter>("all");
   const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [resetConfirmation, setResetConfirmation] = useState("");
+  const [resetResult, setResetResult] = useState<number | null>(null);
   const utils = trpc.useUtils();
   const requestsQuery = trpc.contactRequests.list.useQuery(
     filter === "all" ? undefined : { status: filter },
@@ -39,6 +60,16 @@ export default function AdminContactRequests() {
   );
   const updateStatus = trpc.contactRequests.updateStatus.useMutation({
     onSuccess: () => void utils.contactRequests.list.invalidate(),
+  });
+  const updateDemoFlag = trpc.contactRequests.updateDemoFlag.useMutation({
+    onSuccess: () => void utils.contactRequests.list.invalidate(),
+  });
+  const resetDemoData = trpc.contactRequests.resetDemoData.useMutation({
+    onSuccess: result => {
+      setResetResult(result.cleared);
+      setResetConfirmation("");
+      void utils.contactRequests.list.invalidate();
+    },
   });
   const requests = requestsQuery.data ?? [];
 
@@ -90,18 +121,85 @@ export default function AdminContactRequests() {
             are restricted to this administrator view.
           </p>
         </div>
-        <Button
-          variant="outline"
-          onClick={() => void requestsQuery.refetch()}
-          disabled={requestsQuery.isFetching}
-          className="border-[#c9d5c8] bg-white text-[#173f3a] hover:bg-[#f3f7f2]"
-        >
-          <RefreshCw
-            className={`mr-2 h-4 w-4 ${requestsQuery.isFetching ? "animate-spin" : ""}`}
-          />
-          Refresh
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button
+                variant="outline"
+                className="border-[#e5b4ad] bg-white text-[#94382d] hover:bg-[#fff5f3] hover:text-[#7d2f26]"
+              >
+                <Eraser className="mr-2 h-4 w-4" />
+                Reset Demo Data
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Reset marked demo requests?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This permanently deletes only requests explicitly marked as
+                  demo data. Real privacy requests and general inquiries are not
+                  affected.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <label className="space-y-2 text-sm font-semibold text-[#173f3a]">
+                Type <span className="mono-meta text-xs">RESET DEMO DATA</span>{" "}
+                to confirm
+                <Input
+                  value={resetConfirmation}
+                  onChange={event => setResetConfirmation(event.target.value)}
+                  placeholder="RESET DEMO DATA"
+                  className="mt-2"
+                />
+              </label>
+              {resetDemoData.error && (
+                <p role="alert" className="text-sm font-medium text-[#a4372c]">
+                  {resetDemoData.error.message}
+                </p>
+              )}
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  disabled={
+                    resetConfirmation !== "RESET DEMO DATA" ||
+                    resetDemoData.isPending
+                  }
+                  onClick={event => {
+                    event.preventDefault();
+                    resetDemoData.mutate({ confirmation: "RESET DEMO DATA" });
+                  }}
+                  className="bg-[#a4372c] hover:bg-[#852b22]"
+                >
+                  {resetDemoData.isPending
+                    ? "Resetting…"
+                    : "Delete marked demo data"}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+          <Button
+            variant="outline"
+            onClick={() => void requestsQuery.refetch()}
+            disabled={requestsQuery.isFetching}
+            className="border-[#c9d5c8] bg-white text-[#173f3a] hover:bg-[#f3f7f2]"
+          >
+            <RefreshCw
+              className={`mr-2 h-4 w-4 ${requestsQuery.isFetching ? "animate-spin" : ""}`}
+            />
+            Refresh
+          </Button>
+        </div>
       </header>
+
+      {resetResult !== null && (
+        <div
+          role="status"
+          className="rounded-2xl border border-[#b9d8bd] bg-[#f2faef] px-4 py-3 text-sm text-[#285a33]"
+        >
+          Reset complete. {resetResult} marked demo{" "}
+          {resetResult === 1 ? "request was" : "requests were"} removed. Real
+          submissions were retained.
+        </div>
+      )}
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div
@@ -176,7 +274,15 @@ export default function AdminContactRequests() {
                 </div>
                 <div className="mt-3 flex items-center justify-between gap-3 text-[11px] text-[#7d8a84]">
                   <span className="capitalize">{request.requestType}</span>
-                  <span>{formatDate(request.createdAt)}</span>
+                  <span className="flex items-center gap-2">
+                    {request.isDemo && (
+                      <FlaskConical
+                        className="h-3.5 w-3.5 text-[#9b6a16]"
+                        aria-label="Demo data"
+                      />
+                    )}
+                    {formatDate(request.createdAt)}
+                  </span>
                 </div>
               </button>
             ))}
@@ -272,6 +378,32 @@ export default function AdminContactRequests() {
                     {updateStatus.error.message}
                   </span>
                 )}
+              </div>
+              <div className="mt-4 flex flex-wrap items-center gap-3 rounded-xl bg-[#f8faf7] p-3 text-sm">
+                <FlaskConical className="h-4 w-4 text-[#9b6a16]" />
+                <p className="flex-1 text-[#61706b]">
+                  {selected.isDemo
+                    ? "This request is designated as demo data and will be removed by Reset Demo Data."
+                    : "Real request protected. Mark it as demo data only if it is safe to delete during a reset."}
+                </p>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={updateDemoFlag.isPending}
+                  onClick={() =>
+                    updateDemoFlag.mutate({
+                      id: selected.id,
+                      isDemo: !selected.isDemo,
+                    })
+                  }
+                  className={
+                    selected.isDemo
+                      ? "border-[#d6a84d] text-[#805d16]"
+                      : "border-[#c9d5c8]"
+                  }
+                >
+                  {selected.isDemo ? "Remove demo mark" : "Mark as demo data"}
+                </Button>
               </div>
             </article>
           )}

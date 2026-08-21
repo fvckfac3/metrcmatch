@@ -345,6 +345,46 @@ export const notificationEvents = mysqlTable(
   ]
 );
 
+export const customNotifications = mysqlTable(
+  "customNotifications",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    title: varchar("title", { length: 140 }).notNull(),
+    message: text("message").notNull(),
+    severity: mysqlEnum("severity", ["info", "success", "warning", "critical"])
+      .default("info")
+      .notNull(),
+    isActive: boolean("isActive").default(true).notNull(),
+    expiresAt: timestamp("expiresAt"),
+    createdByUserId: int("createdByUserId").notNull(),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  },
+  table => [
+    index("customNotifications_active_expires_idx").on(
+      table.isActive,
+      table.expiresAt
+    ),
+  ]
+);
+
+export const customNotificationDismissals = mysqlTable(
+  "customNotificationDismissals",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    notificationId: int("notificationId").notNull(),
+    userId: int("userId").notNull(),
+    dismissedAt: timestamp("dismissedAt").defaultNow().notNull(),
+  },
+  table => [
+    uniqueIndex("customNotificationDismissals_notification_user_unique").on(
+      table.notificationId,
+      table.userId
+    ),
+    index("customNotificationDismissals_user_idx").on(table.userId),
+  ]
+);
+
 export const contactRequests = mysqlTable(
   "contactRequests",
   {
@@ -357,6 +397,7 @@ export const contactRequests = mysqlTable(
     status: mysqlEnum("status", ["new", "in_review", "closed"])
       .default("new")
       .notNull(),
+    isDemo: boolean("isDemo").default(false).notNull(),
     createdAt: timestamp("createdAt").defaultNow().notNull(),
   },
   table => [
@@ -364,6 +405,7 @@ export const contactRequests = mysqlTable(
       table.status,
       table.createdAt
     ),
+    index("contactRequests_demo_created_idx").on(table.isDemo, table.createdAt),
   ]
 );
 

@@ -9,6 +9,7 @@ import { logsRouter } from "./routers/logs";
 import { metrcRouter } from "./routers/metrc";
 import { reportsRouter } from "./routers/reports";
 import { contactRequestsRouter } from "./routers/contactRequests";
+import { customNotificationsRouter } from "./routers/customNotifications";
 
 export const appRouter = router({
   system: systemRouter,
@@ -35,6 +36,7 @@ export const appRouter = router({
   discrepancies: discrepanciesRouter,
   reports: reportsRouter,
   contactRequests: contactRequestsRouter,
+  customNotifications: customNotificationsRouter,
 });
 
 export type AppRouter = typeof appRouter;

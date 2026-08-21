@@ -108,6 +108,24 @@ async function main() {
       "Owner inbox did not render its required protected controls."
     );
   await evaluate(
+    "[...document.querySelectorAll('button')].find(button => button.textContent?.trim().includes('Reset Demo Data'))?.click()"
+  );
+  await wait(150);
+  const resetDialog = await evaluate(`(() => ({
+    title: [...document.querySelectorAll('[role=alertdialog] h2')].some(node => node.textContent?.trim() === 'Reset marked demo requests?'),
+    confirmationInput: Boolean(document.querySelector('[role=alertdialog] input[placeholder="RESET DEMO DATA"]')),
+    destructiveDisabled: [...document.querySelectorAll('[role=alertdialog] button')].some(button => button.textContent?.trim() === 'Delete marked demo data' && button.disabled)
+  }))()`);
+  if (
+    !resetDialog.title ||
+    !resetDialog.confirmationInput ||
+    !resetDialog.destructiveDisabled
+  )
+    throw new Error("Demo reset dialog did not require explicit confirmation.");
+  await evaluate(
+    "[...document.querySelectorAll('[role=alertdialog] button')].find(button => button.textContent?.trim() === 'Cancel')?.click()"
+  );
+  await evaluate(
     "[...document.querySelectorAll('button')].find(button => button.textContent?.trim().includes('Refresh'))?.click()"
   );
   await wait(450);
@@ -116,6 +134,25 @@ async function main() {
   );
   if (!afterRefresh)
     throw new Error("Owner inbox did not remain available after refresh.");
+  await command("Page.navigate", { url: `${baseUrl}/admin/notifications` });
+  await wait(1_200);
+  const notificationsPage = await evaluate(`(() => ({
+    title: document.querySelector('h1')?.textContent?.trim(),
+    ownerNav: [...document.querySelectorAll('span')].some(node => node.textContent?.trim() === 'Custom notices'),
+    titleInput: Boolean(document.querySelector('input[placeholder="e.g., Planned system maintenance"]')),
+    messageInput: Boolean(document.querySelector('textarea')),
+    publish: [...document.querySelectorAll('button')].some(button => button.textContent?.trim().includes('Publish notification'))
+  }))()`);
+  if (
+    notificationsPage.title !== "Custom notifications" ||
+    !notificationsPage.ownerNav ||
+    !notificationsPage.titleInput ||
+    !notificationsPage.messageInput ||
+    !notificationsPage.publish
+  )
+    throw new Error(
+      "Owner custom-notification controls did not render as expected."
+    );
   await command("Page.navigate", { url: `${baseUrl}/workspace` });
   let workspace;
   for (let attempt = 0; attempt < 20; attempt += 1) {
@@ -140,7 +177,7 @@ async function main() {
       `Configured owner workspace verification failed: ${JSON.stringify(workspace)}`
     );
   console.log(
-    "Verified authenticated owner inbox and direct workspace access without a subscription redirect."
+    "Verified authenticated owner inbox, notification composer, and direct workspace access without a subscription redirect."
   );
   socket.close();
 }

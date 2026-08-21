@@ -116,3 +116,11 @@
 - [x] Add clear direct owner navigation to the workspace and protected contact-request inbox.
 - [x] Test owner workspace access and non-owner paywall enforcement, then save and push the update to GitHub.
 - [x] Make the workspace summary render safely when an owner demonstrates an empty facility with no Metrc sync history.
+- [x] Add an owner-only Reset Demo Data action that removes only clearly designated test contact submissions.
+- [x] Require explicit confirmation and show clear results while preserving real privacy requests and general inquiries.
+- [x] Test reset authorization and data-selection safeguards, then validate and push the update to GitHub.
+- [x] Add a secure owner-managed custom in-app notification composer with message, severity, visibility, and dismissal controls.
+- [x] Display active custom notifications to authorized workspace users without weakening existing entitlement or owner-only management rules.
+- [x] Test notification management, visibility, dismissal, and authorization alongside the demo-reset safeguards, then push the completed update.
+- [ ] Save a checkpoint for the completed demo-reset and custom notification update.
+- [ ] Push the validated demo-reset and custom notification changes to the private GitHub repository and confirm the remote update.

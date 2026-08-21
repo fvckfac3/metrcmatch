@@ -25,6 +25,7 @@ import { useIsMobile } from "@/hooks/useMobile";
 import { trpc } from "@/lib/trpc";
 import {
   AlertTriangle,
+  BellRing,
   ClipboardCheck,
   CreditCard,
   FileText,
@@ -34,6 +35,7 @@ import {
   PanelLeft,
   Settings,
   ShieldCheck,
+  X,
 } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
@@ -48,10 +50,28 @@ const allMenuItems = [
   { icon: CreditCard, label: "Billing", path: "/billing" },
 ];
 
-const adminMenuItem = {
-  icon: Inbox,
-  label: "Contact requests",
-  path: "/admin/contact-requests",
+const ownerMenuItems = [
+  { icon: Inbox, label: "Contact requests", path: "/admin/contact-requests" },
+  { icon: BellRing, label: "Custom notices", path: "/admin/notifications" },
+];
+
+const notificationStyles = {
+  info: {
+    panel: "border-[#a9cfe6] bg-[#edf7fc] text-[#245a80]",
+    icon: "bg-[#cfe9f7] text-[#1d5576]",
+  },
+  success: {
+    panel: "border-[#b9d8bd] bg-[#f2faef] text-[#285a33]",
+    icon: "bg-[#d9efda] text-[#285a33]",
+  },
+  warning: {
+    panel: "border-[#efd59a] bg-[#fff8e8] text-[#7a5a14]",
+    icon: "bg-[#f9e8bd] text-[#785812]",
+  },
+  critical: {
+    panel: "border-[#e8b7ae] bg-[#fff6f4] text-[#993c30]",
+    icon: "bg-[#f8d9d3] text-[#8e342a]",
+  },
 };
 
 const SIDEBAR_WIDTH_KEY = "metrcmatch-sidebar-width";
@@ -146,7 +166,7 @@ function DashboardLayoutContent({
     memberRole === "staff"
       ? allMenuItems.filter(item => item.path === "/logs")
       : user?.isOwner
-        ? [...allMenuItems, adminMenuItem]
+        ? [...allMenuItems, ...ownerMenuItems]
         : allMenuItems;
   const activeMenuItem = menuItems.find(item => item.path === location);
 
@@ -326,9 +346,60 @@ function DashboardLayoutContent({
           </div>
         )}
         <main className="relative z-10 min-h-screen flex-1 p-4 sm:p-6 lg:p-8">
+          <WorkspaceNotifications />
           {children}
         </main>
       </SidebarInset>
     </>
+  );
+}
+
+function WorkspaceNotifications() {
+  const utils = trpc.useUtils();
+  const notificationsQuery = trpc.customNotifications.listActive.useQuery();
+  const dismiss = trpc.customNotifications.dismiss.useMutation({
+    onSuccess: () => void utils.customNotifications.listActive.invalidate(),
+  });
+  const notifications = notificationsQuery.data ?? [];
+
+  if (!notifications.length) return null;
+
+  return (
+    <section
+      aria-label="Workspace notifications"
+      className="mx-auto mb-5 max-w-7xl space-y-3"
+    >
+      {notifications.map(notification => {
+        const style = notificationStyles[notification.severity];
+        return (
+          <div
+            key={notification.id}
+            role={notification.severity === "critical" ? "alert" : "status"}
+            className={`flex items-start gap-3 rounded-2xl border p-4 shadow-[0_10px_22px_rgba(18,53,47,0.04)] ${style.panel}`}
+          >
+            <span
+              className={`grid h-8 w-8 shrink-0 place-items-center rounded-xl ${style.icon}`}
+            >
+              <BellRing className="h-4 w-4" aria-hidden />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-bold">{notification.title}</p>
+              <p className="mt-1 whitespace-pre-wrap text-sm leading-6 opacity-90">
+                {notification.message}
+              </p>
+            </div>
+            <button
+              type="button"
+              aria-label={`Dismiss ${notification.title}`}
+              disabled={dismiss.isPending}
+              onClick={() => dismiss.mutate({ id: notification.id })}
+              className="grid h-8 w-8 shrink-0 place-items-center rounded-xl transition-colors hover:bg-white/55 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              <X className="h-4 w-4" aria-hidden />
+            </button>
+          </div>
+        );
+      })}
+    </section>
   );
 }

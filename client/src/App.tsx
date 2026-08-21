@@ -22,6 +22,7 @@ const Terms = lazy(() => import("./pages/Terms"));
 const Privacy = lazy(() => import("./pages/Privacy"));
 const Contact = lazy(() => import("./pages/Contact"));
 const AdminContactRequests = lazy(() => import("./pages/AdminContactRequests"));
+const AdminNotifications = lazy(() => import("./pages/AdminNotifications"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 function PageFallback() {
@@ -130,6 +131,11 @@ function Router() {
       <Route path="/admin/contact-requests">
         <AuthenticatedPage>
           <AdminContactRequests />
+        </AuthenticatedPage>
+      </Route>
+      <Route path="/admin/notifications">
+        <AuthenticatedPage>
+          <AdminNotifications />
         </AuthenticatedPage>
       </Route>
       <Route path="/workspace">

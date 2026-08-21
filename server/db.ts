@@ -2,6 +2,8 @@ import { and, desc, eq, gte, like, lte, or, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import {
   contactRequests,
+  customNotificationDismissals,
+  customNotifications,
   discrepancies,
   facilities,
   facilityMembers,
@@ -48,6 +50,16 @@ export function getInsertId(result: unknown) {
   if (!Number.isSafeInteger(id) || id <= 0)
     throw new Error("Database insert did not return a valid record ID.");
   return id;
+}
+
+export function getAffectedRows(result: unknown) {
+  const header = Array.isArray(result) ? result[0] : result;
+  const affectedRows =
+    header && typeof header === "object" && "affectedRows" in header
+      ? (header as { affectedRows?: unknown }).affectedRows
+      : 0;
+  const count = Number(affectedRows);
+  return Number.isSafeInteger(count) && count >= 0 ? count : 0;
 }
 
 export async function processInBatches<T>(
@@ -732,6 +744,25 @@ export async function updateContactRequestStatus(
   return { ...existing, status };
 }
 
+export async function updateContactRequestDemo(id: number, isDemo: boolean) {
+  const existing = await getContactRequest(id);
+  if (!existing) return null;
+  const database = await requireDb();
+  await database
+    .update(contactRequests)
+    .set({ isDemo })
+    .where(eq(contactRequests.id, id));
+  return { ...existing, isDemo };
+}
+
+export async function clearDemoContactRequests() {
+  const database = await requireDb();
+  const result = await database
+    .delete(contactRequests)
+    .where(eq(contactRequests.isDemo, true));
+  return getAffectedRows(result);
+}
+
 export async function updateNotificationStatus(
   id: number,
   status: "sent" | "failed" | "suppressed"
@@ -741,6 +772,121 @@ export async function updateNotificationStatus(
     .update(notificationEvents)
     .set({ status, ...(status === "sent" ? { deliveredAt: new Date() } : {}) })
     .where(eq(notificationEvents.id, id));
+}
+
+export type CustomNotificationSeverity =
+  | "info"
+  | "success"
+  | "warning"
+  | "critical";
+
+export async function createCustomNotification(input: {
+  title: string;
+  message: string;
+  severity: CustomNotificationSeverity;
+  isActive?: boolean;
+  expiresAt?: Date | null;
+  createdByUserId: number;
+}) {
+  const database = await requireDb();
+  const result = await database.insert(customNotifications).values({
+    title: input.title,
+    message: input.message,
+    severity: input.severity,
+    isActive: input.isActive ?? true,
+    expiresAt: input.expiresAt ?? null,
+    createdByUserId: input.createdByUserId,
+  });
+  return getInsertId(result);
+}
+
+export async function listActiveCustomNotifications(userId: number) {
+  const database = await requireDb();
+  const now = new Date();
+  return database
+    .select({
+      id: customNotifications.id,
+      title: customNotifications.title,
+      message: customNotifications.message,
+      severity: customNotifications.severity,
+      expiresAt: customNotifications.expiresAt,
+      createdAt: customNotifications.createdAt,
+    })
+    .from(customNotifications)
+    .leftJoin(
+      customNotificationDismissals,
+      and(
+        eq(customNotificationDismissals.notificationId, customNotifications.id),
+        eq(customNotificationDismissals.userId, userId)
+      )
+    )
+    .where(
+      and(
+        eq(customNotifications.isActive, true),
+        or(
+          sql`${customNotifications.expiresAt} IS NULL`,
+          gte(customNotifications.expiresAt, now)
+        ),
+        sql`${customNotificationDismissals.id} IS NULL`
+      )
+    )
+    .orderBy(desc(customNotifications.createdAt));
+}
+
+export async function listAllCustomNotifications() {
+  const database = await requireDb();
+  return database
+    .select()
+    .from(customNotifications)
+    .orderBy(desc(customNotifications.createdAt));
+}
+
+export async function getCustomNotification(id: number) {
+  const database = await requireDb();
+  return (
+    (
+      await database
+        .select()
+        .from(customNotifications)
+        .where(eq(customNotifications.id, id))
+        .limit(1)
+    )[0] ?? null
+  );
+}
+
+export async function updateCustomNotification(
+  id: number,
+  input: {
+    title?: string;
+    message?: string;
+    severity?: CustomNotificationSeverity;
+    isActive?: boolean;
+    expiresAt?: Date | null;
+  }
+) {
+  const existing = await getCustomNotification(id);
+  if (!existing) return null;
+  const database = await requireDb();
+  await database
+    .update(customNotifications)
+    .set(input)
+    .where(eq(customNotifications.id, id));
+  return { ...existing, ...input };
+}
+
+export async function dismissCustomNotification(
+  notificationId: number,
+  userId: number
+) {
+  const database = await requireDb();
+  await database
+    .insert(customNotificationDismissals)
+    .values({ notificationId, userId })
+    .onDuplicateKeyUpdate({ set: { notificationId, userId } });
+}
+
+export async function deactivateCustomNotification(id: number) {
+  return updateCustomNotification(id, { isActive: false });
 }
 
 export async function getDashboardData(facilityId: number) {
