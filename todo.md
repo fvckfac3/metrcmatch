@@ -122,5 +122,5 @@
 - [x] Add a secure owner-managed custom in-app notification composer with message, severity, visibility, and dismissal controls.
 - [x] Display active custom notifications to authorized workspace users without weakening existing entitlement or owner-only management rules.
 - [x] Test notification management, visibility, dismissal, and authorization alongside the demo-reset safeguards, then push the completed update.
-- [ ] Save a checkpoint for the completed demo-reset and custom notification update.
-- [ ] Push the validated demo-reset and custom notification changes to the private GitHub repository and confirm the remote update.
+- [x] Save a checkpoint for the completed demo-reset and custom notification update.
+- [x] Push the validated demo-reset and custom notification changes to the private GitHub repository and confirm the remote update.
