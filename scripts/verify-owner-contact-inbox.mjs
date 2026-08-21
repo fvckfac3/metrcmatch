@@ -87,7 +87,7 @@ async function main() {
   });
   await command("Page.navigate", { url: `${baseUrl}/admin/contact-requests` });
   await command("Runtime.enable");
-  await wait(1_800);
+  await wait(3_800);
 
   const initial = await evaluate(`(() => ({
     title: document.querySelector('h1')?.textContent?.trim(),
@@ -116,8 +116,31 @@ async function main() {
   );
   if (!afterRefresh)
     throw new Error("Owner inbox did not remain available after refresh.");
+  await command("Page.navigate", { url: `${baseUrl}/workspace` });
+  let workspace;
+  for (let attempt = 0; attempt < 20; attempt += 1) {
+    await wait(500);
+    workspace = await evaluate(`(() => ({
+      path: window.location.pathname,
+      title: document.querySelector('h1')?.textContent?.trim(),
+      redirectedToPricing: window.location.pathname === '/pricing'
+    }))()`);
+    if (
+      workspace.path === "/pricing" ||
+      workspace.title === "Compliance control center"
+    )
+      break;
+  }
+  if (
+    workspace?.path !== "/workspace" ||
+    workspace?.title !== "Compliance control center" ||
+    workspace?.redirectedToPricing
+  )
+    throw new Error(
+      `Configured owner workspace verification failed: ${JSON.stringify(workspace)}`
+    );
   console.log(
-    "Verified authenticated owner inbox list, detail, refresh, and status control."
+    "Verified authenticated owner inbox and direct workspace access without a subscription redirect."
   );
   socket.close();
 }

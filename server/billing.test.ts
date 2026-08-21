@@ -1,5 +1,9 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+
+vi.mock("./_core/env", () => ({ ENV: { ownerOpenId: "owner" } }));
 import {
+  canAccessOperationalWorkspace,
+  hasOwnerDemoAccess,
   isFacilityEntitled,
   isSubscriptionPlan,
   SUBSCRIPTION_PLANS,
@@ -38,6 +42,24 @@ describe("facility subscription entitlement", () => {
         isFacilityEntitled({ subscriptionStatus, trialEndsAt: null })
       ).toBe(false);
     }
+  });
+
+  it("allows only the configured owner to demonstrate an otherwise inactive workspace", () => {
+    const inactiveFacility = {
+      subscriptionStatus: "inactive",
+      trialEndsAt: null,
+    };
+    expect(hasOwnerDemoAccess({ openId: "owner" })).toBe(true);
+    expect(
+      canAccessOperationalWorkspace({ openId: "owner" }, inactiveFacility)
+    ).toBe(true);
+    expect(hasOwnerDemoAccess({ openId: "another-user" })).toBe(false);
+    expect(
+      canAccessOperationalWorkspace(
+        { openId: "another-user" },
+        inactiveFacility
+      )
+    ).toBe(false);
   });
 
   it("exposes only the configured self-serve subscription plans", () => {

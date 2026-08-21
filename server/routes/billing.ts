@@ -3,9 +3,11 @@ import Stripe from "stripe";
 import { z } from "zod";
 import { ENV } from "../_core/env";
 import {
+  canAccessOperationalWorkspace,
   ensurePlanPrice,
   ensureStripeCustomer,
   getStripe,
+  hasOwnerDemoAccess,
   isFacilityEntitled,
   isSubscriptionPlan,
   SUBSCRIPTION_PLANS,
@@ -191,7 +193,7 @@ export function registerStripeWebhookRoute(app: Express) {
 export function registerBillingRoutes(app: Express) {
   app.get("/api/billing/status", async (req, res) => {
     try {
-      const { facility } = await requireFacilityContext(
+      const { facility, user } = await requireFacilityContext(
         req,
         "Scheduled sessions cannot view billing status."
       );
@@ -200,7 +202,8 @@ export function registerBillingRoutes(app: Express) {
         status: facility.subscriptionStatus,
         trialEndsAt: facility.trialEndsAt,
         currentPeriodEndsAt: facility.currentPeriodEndsAt,
-        isEntitled: isFacilityEntitled(facility),
+        isEntitled: canAccessOperationalWorkspace(user, facility),
+        ownerDemoAccess: hasOwnerDemoAccess(user),
         hasBillingAccount: Boolean(facility.stripeCustomerId),
       });
     } catch (error) {

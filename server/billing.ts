@@ -49,6 +49,17 @@ export function isFacilityEntitled(facility: {
   );
 }
 
+export function hasOwnerDemoAccess(user: { openId: string }) {
+  return Boolean(ENV.ownerOpenId) && user.openId === ENV.ownerOpenId;
+}
+
+export function canAccessOperationalWorkspace(
+  user: { openId: string },
+  facility: { subscriptionStatus: string; trialEndsAt: Date | null }
+) {
+  return hasOwnerDemoAccess(user) || isFacilityEntitled(facility);
+}
+
 async function findOrCreatePlanProduct(
   stripe: Stripe,
   plan: Exclude<SubscriptionPlan, "enterprise">

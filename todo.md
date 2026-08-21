@@ -112,3 +112,7 @@
 - [x] Enforce contact-request management against the configured owner identity rather than the broader administrator role.
 - [x] Perform authenticated owner inbox verification for list, detail, refresh, and status updates without exposing submission content in project records.
 - [x] Re-run full validation and save/push the owner-only authorization refinement.
+- [x] Add an owner-only testing/demo entitlement bypass that preserves subscription enforcement for every other user.
+- [x] Add clear direct owner navigation to the workspace and protected contact-request inbox.
+- [x] Test owner workspace access and non-owner paywall enforcement, then save and push the update to GitHub.
+- [x] Make the workspace summary render safely when an owner demonstrates an empty facility with no Metrc sync history.

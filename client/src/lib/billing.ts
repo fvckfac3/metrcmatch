@@ -12,6 +12,7 @@ export type BillingStatus = {
   trialEndsAt: string | null;
   currentPeriodEndsAt: string | null;
   isEntitled: boolean;
+  ownerDemoAccess: boolean;
   hasBillingAccount: boolean;
 };
 

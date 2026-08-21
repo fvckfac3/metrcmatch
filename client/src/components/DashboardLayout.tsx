@@ -227,7 +227,20 @@ function DashboardLayoutContent({
             </SidebarMenu>
           </SidebarContent>
           <SidebarFooter className="p-3">
-            {!isCollapsed && memberRole !== "staff" && (
+            {!isCollapsed && user?.isOwner && (
+              <button
+                onClick={() => setLocation("/workspace")}
+                className="mb-3 w-full rounded-xl border border-[#9fc4a4] bg-[#e9f5ea] p-3 text-left transition-colors hover:bg-[#dcefdc] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5e8b62]"
+              >
+                <p className="text-[10px] font-bold uppercase tracking-[0.13em] text-[#356e45]">
+                  Owner demo access
+                </p>
+                <p className="mt-1 text-xs font-semibold text-[#173f3a]">
+                  Open full workspace
+                </p>
+              </button>
+            )}
+            {!isCollapsed && memberRole !== "staff" && !user?.isOwner && (
               <button
                 onClick={() => setLocation("/billing")}
                 className="mb-3 w-full rounded-xl border border-[#d6e3d5] bg-[#f6faf5] p-3 text-left transition-colors hover:bg-[#eef5ed] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5e8b62]"

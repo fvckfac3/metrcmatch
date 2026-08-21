@@ -270,12 +270,12 @@ export default function Home() {
         <Metric
           label="Last sync"
           value={
-            status?.connection.lastSyncedAt
+            status?.connection?.lastSyncedAt
               ? new Date(status.connection.lastSyncedAt).toLocaleDateString()
               : "Never"
           }
           note={
-            status?.connection.lastSyncedAt
+            status?.connection?.lastSyncedAt
               ? new Date(status.connection.lastSyncedAt).toLocaleTimeString(
                   [],
                   { hour: "numeric", minute: "2-digit" }
@@ -413,13 +413,13 @@ export default function Home() {
               </div>
               <StatusPill
                 tone={
-                  status?.connection.connectionStatus === "connected"
+                  status?.connection?.connectionStatus === "connected"
                     ? "green"
                     : "neutral"
                 }
               >
                 <span className="mono-meta">
-                  {status?.connection.connectionStatus?.replace("_", " ") ??
+                  {status?.connection?.connectionStatus?.replace("_", " ") ??
                     "not connected"}
                 </span>
               </StatusPill>

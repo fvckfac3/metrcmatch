@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
 import { ZodError } from "zod";
 import { sdk } from "./_core/sdk";
-import { isFacilityEntitled } from "./billing";
+import { canAccessOperationalWorkspace } from "./billing";
 import * as db from "./db";
 
 export class ApiError extends Error {
@@ -37,7 +37,7 @@ export async function requireEntitledFacilityContext(
   cronMessage: string
 ) {
   const context = await requireFacilityContext(req, cronMessage);
-  if (!isFacilityEntitled(context.facility)) {
+  if (!canAccessOperationalWorkspace(context.user, context.facility)) {
     throw new ApiError(
       402,
       "An active MetrcMatch subscription or trial is required.",

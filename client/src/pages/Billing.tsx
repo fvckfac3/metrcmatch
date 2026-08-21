@@ -142,6 +142,22 @@ export default function Billing() {
           {portalError}
         </div>
       )}
+      {billing?.ownerDemoAccess && (
+        <div className="flex flex-col gap-3 rounded-2xl border border-[#b9d8bd] bg-[#f2faef] px-4 py-3 text-sm text-[#285a33] sm:flex-row sm:items-center sm:justify-between">
+          <p>
+            <strong>Owner demo access is active.</strong> Your configured owner
+            account can open the full workspace for testing without changing
+            customer subscription rules.
+          </p>
+          <Button
+            onClick={() => setLocation("/workspace")}
+            className="shrink-0 bg-[#173f3a] hover:bg-[#0e2f2b]"
+          >
+            Open workspace
+            <ArrowRight className="ml-2 h-4 w-4" />
+          </Button>
+        </div>
+      )}
       <section className="command-surface overflow-hidden rounded-[2rem] border border-[#dce3da] bg-white shadow-[0_18px_55px_rgba(23,63,58,0.08)]">
         <div className="grid gap-6 p-6 sm:grid-cols-[1fr_auto] sm:p-8">
           <div>
@@ -159,11 +175,13 @@ export default function Billing() {
                 : "No active plan"}
             </h2>
             <p className="mt-2 text-sm leading-6 text-[#61706b]">
-              {trialDays !== null
-                ? `${trialDays} day${trialDays === 1 ? "" : "s"} remain in your card-backed audit trial.`
-                : billing?.isEntitled
-                  ? "Your MetrcMatch facility access is active."
-                  : "Choose a plan to activate a 14-day, card-backed audit trial."}
+              {billing?.ownerDemoAccess
+                ? "Owner demo access is active. Customer facilities still require an active trial or subscription."
+                : trialDays !== null
+                  ? `${trialDays} day${trialDays === 1 ? "" : "s"} remain in your card-backed audit trial.`
+                  : billing?.isEntitled
+                    ? "Your MetrcMatch facility access is active."
+                    : "Choose a plan to activate a 14-day, card-backed audit trial."}
             </p>
           </div>
           <div className="flex items-start">
