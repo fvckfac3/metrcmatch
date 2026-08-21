@@ -134,8 +134,8 @@
 - [x] Create a social-sharing Open Graph brand card and connect the relevant social metadata to the public experience.
 - [x] Add the reviewed reconciliation support illustration to a clear onboarding stage without disrupting operational workflows.
 - [x] Validate the visual assets and onboarding behavior, then publish and synchronize the update.
-- [ ] Save a checkpoint for the completed icon-export, Open Graph, and illustrated onboarding update.
-- [ ] Push the validated visual-enhancement update to the private GitHub repository and confirm the remote sync.
+- [x] Save a checkpoint for the completed icon-export, Open Graph, and illustrated onboarding update.
+- [x] Push the validated visual-enhancement update to the private GitHub repository and confirm the remote sync.
 - [x] Verify the onboarding illustration file completed successfully and visually confirm it renders inside the authenticated Settings onboarding panel.
 - [x] Re-run a targeted authenticated visual check for the Settings onboarding section after the illustration is confirmed live.
 - [x] Run a deterministic authenticated browser verification proving the Settings onboarding panel and its reconciliation illustration render for the configured owner.
