@@ -15,6 +15,7 @@ import { registerMetrcRoutes } from "../routes/metrc";
 import { registerLogRoutes } from "../routes/logs";
 import { registerDiscrepancyRoutes } from "../routes/discrepancies";
 import { registerMetrcStatusRoutes } from "../routes/metrcStatus";
+import { registerContactRoutes } from "../routes/contact";
 import {
   registerBillingRoutes,
   registerStripeWebhookRoute,
@@ -49,6 +50,7 @@ async function startServer() {
   registerLogRoutes(app);
   registerDiscrepancyRoutes(app);
   registerMetrcStatusRoutes(app);
+  registerContactRoutes(app);
   registerBillingRoutes(app);
   registerReportExportRoutes(app);
   app.post("/api/scheduled/metrc-sync", scheduledMetrcSync);

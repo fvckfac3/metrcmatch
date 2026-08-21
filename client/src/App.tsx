@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Loader2 } from "lucide-react";
 import { lazy, Suspense, type ReactNode, useEffect } from "react";
 import { Route, Switch, useLocation } from "wouter";
+import CookieConsent from "./components/CookieConsent";
 import DashboardLayout from "./components/DashboardLayout";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
@@ -19,6 +20,7 @@ const Pricing = lazy(() => import("./pages/Pricing"));
 const Billing = lazy(() => import("./pages/Billing"));
 const Terms = lazy(() => import("./pages/Terms"));
 const Privacy = lazy(() => import("./pages/Privacy"));
+const Contact = lazy(() => import("./pages/Contact"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 function PageFallback() {
@@ -119,6 +121,11 @@ function Router() {
           <Privacy />
         </Suspense>
       </Route>
+      <Route path="/contact">
+        <Suspense fallback={<PageFallback />}>
+          <Contact />
+        </Suspense>
+      </Route>
       <Route path="/workspace">
         <ProtectedPage>
           <Home />
@@ -165,6 +172,7 @@ export default function App() {
         <TooltipProvider>
           <Toaster />
           <Router />
+          <CookieConsent />
         </TooltipProvider>
       </ThemeProvider>
     </ErrorBoundary>

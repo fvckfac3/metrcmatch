@@ -345,6 +345,28 @@ export const notificationEvents = mysqlTable(
   ]
 );
 
+export const contactRequests = mysqlTable(
+  "contactRequests",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    requestType: mysqlEnum("requestType", ["privacy", "general"]).notNull(),
+    name: varchar("name", { length: 120 }),
+    email: varchar("email", { length: 320 }).notNull(),
+    subject: varchar("subject", { length: 255 }),
+    message: text("message").notNull(),
+    status: mysqlEnum("status", ["new", "in_review", "closed"])
+      .default("new")
+      .notNull(),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+  },
+  table => [
+    index("contactRequests_status_created_idx").on(
+      table.status,
+      table.createdAt
+    ),
+  ]
+);
+
 export const usersRelations = relations(users, ({ many }) => ({
   memberships: many(facilityMembers),
 }));

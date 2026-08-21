@@ -510,6 +510,12 @@ export default function Landing() {
               >
                 Privacy Policy
               </Link>
+              <Link
+                href="/contact"
+                className="rounded-md text-[#356e45] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5e8b62]"
+              >
+                Contact
+              </Link>
             </div>
           </div>
           <button

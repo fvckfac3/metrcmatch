@@ -38,9 +38,9 @@ export default function Terms() {
           <div className="mt-10 rounded-2xl border border-[#f0d99c] bg-[#fff8e8] p-5 text-sm leading-6 text-[#725d28]">
             <strong>Draft for legal review.</strong> These terms are a working
             product draft, not legal advice. Before public launch, the
-            MetrcMatch operator must have qualified counsel confirm the legal
-            entity, contact details, governing law, dispute terms, and any
-            industry-specific obligations.
+            MetrcMatch operator, Rocky Hayes, should have qualified counsel
+            confirm governing law, dispute terms, and any industry-specific
+            obligations.
           </div>
 
           <div className="legal-copy mt-10 space-y-9 text-[0.95rem] leading-7 text-[#52685c]">
@@ -143,15 +143,19 @@ export default function Terms() {
             <section>
               <h2>7. Limitation, termination, and contact</h2>
               <p>
-                To the maximum extent permitted by law, the MetrcMatch operator
-                and its licensors will not be liable for indirect, incidental,
-                special, consequential, or punitive damages, or for lost
-                profits, data, goodwill, or business interruption. These terms
-                remain effective until terminated. The operator may suspend or
-                terminate access for breach, security risk, nonpayment, or as
-                required by law. Before public launch, the operator must publish
-                a monitored legal-contact channel on this page for questions,
-                notices, and rights requests.
+                To the maximum extent permitted by law, Rocky Hayes, the
+                MetrcMatch operator, and its licensors will not be liable for
+                indirect, incidental, special, consequential, or punitive
+                damages, or for lost profits, data, goodwill, or business
+                interruption. These terms remain effective until terminated. The
+                operator may suspend or terminate access for breach, security
+                risk, nonpayment, or as required by law. Submit questions,
+                notices, and rights requests through the{" "}
+                <Link href="/contact">Contact page</Link> or email{" "}
+                <a href="mailto:hayesrocky64@gmail.com">
+                  hayesrocky64@gmail.com
+                </a>
+                , attention Rocky Hayes.
               </p>
             </section>
           </div>

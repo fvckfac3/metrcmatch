@@ -38,9 +38,9 @@ export default function Privacy() {
           <div className="mt-10 rounded-2xl border border-[#f0d99c] bg-[#fff8e8] p-5 text-sm leading-6 text-[#725d28]">
             <strong>Draft for legal review.</strong> This policy is a working
             product draft, not legal advice. Before public launch, the
-            MetrcMatch operator must have qualified counsel confirm the legal
-            entity, legal-contact channel, data-retention schedule, applicable
-            laws, and any required notices or consent mechanisms.
+            MetrcMatch operator, Rocky Hayes, should have qualified counsel
+            confirm applicable laws, governing terms, retention practices, and
+            any required notices or consent mechanisms.
           </div>
 
           <div className="legal-copy mt-10 space-y-9 text-[0.95rem] leading-7 text-[#52685c]">
@@ -51,8 +51,8 @@ export default function Privacy() {
                 when you visit the website, create an account, use a facility
                 workspace, connect authorized external services, start a trial,
                 or manage a subscription. The terms &quot;we,&quot;
-                &quot;us,&quot; and &quot;our&quot; refer to the MetrcMatch
-                operator.
+                &quot;us,&quot; and &quot;our&quot; refer to Rocky Hayes, the
+                MetrcMatch operator.
               </p>
             </section>
 
@@ -137,8 +137,10 @@ export default function Privacy() {
                 provide the Service, maintain records, resolve disputes, enforce
                 agreements, and satisfy legal obligations. Retention periods may
                 vary by data type, subscription status, and applicable
-                requirements. The operator must publish a finalized retention
-                schedule before public launch.
+                requirements. We periodically review stored information and
+                delete or de-identify it when it is no longer needed for these
+                purposes, subject to legal, security, and dispute-resolution
+                obligations.
               </p>
             </section>
 
@@ -148,9 +150,12 @@ export default function Privacy() {
                 You can review and update certain account and facility details
                 through the Service. Depending on applicable law, you may have
                 rights to request access, correction, deletion, or restriction
-                of personal information. To submit a request, use the legal
-                contact channel that the operator must publish before public
-                launch. We may request information to verify your identity and
+                of personal information. Submit a request through the{" "}
+                <Link href="/contact">Contact page</Link> or email{" "}
+                <a href="mailto:hayesrocky64@gmail.com">
+                  hayesrocky64@gmail.com
+                </a>
+                . We may request information to verify your identity and
                 authority before responding.
               </p>
             </section>
@@ -171,9 +176,12 @@ export default function Privacy() {
               <p>
                 We may update this policy to reflect changes in the Service or
                 applicable requirements. Material changes will be communicated
-                as required by law. Before public launch, the operator must
-                publish a monitored privacy and legal-contact channel on this
-                page for questions, requests, and notices.
+                as required by law. For privacy questions, requests, and
+                notices, contact Rocky Hayes at{" "}
+                <a href="mailto:hayesrocky64@gmail.com">
+                  hayesrocky64@gmail.com
+                </a>{" "}
+                or use the <Link href="/contact">Contact page</Link>.
               </p>
               <p>
                 Your use of the Service is also governed by the{" "}

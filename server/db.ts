@@ -1,6 +1,7 @@
 import { and, desc, eq, gte, like, lte, or, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import {
+  contactRequests,
   discrepancies,
   facilities,
   facilityMembers,
@@ -666,6 +667,24 @@ export async function createNotification(input: {
     discrepancyId: input.discrepancyId ?? null,
     recipient: input.recipient ?? null,
     status: input.status ?? (input.recipient ? "queued" : "suppressed"),
+  });
+  return getInsertId(result);
+}
+
+export async function createContactRequest(input: {
+  requestType: "privacy" | "general";
+  name?: string | null;
+  email: string;
+  subject?: string | null;
+  message: string;
+}) {
+  const database = await requireDb();
+  const result = await database.insert(contactRequests).values({
+    requestType: input.requestType,
+    name: input.name ?? null,
+    email: input.email,
+    subject: input.subject ?? null,
+    message: input.message,
   });
   return getInsertId(result);
 }

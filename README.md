@@ -201,8 +201,9 @@ After release, perform a controlled operational validation:
 | [`docs/environment-reference.md`](docs/environment-reference.md) | Managed runtime variables and Stripe webhook configuration.             |
 | [`docs/integration-research.md`](docs/integration-research.md)   | External integration notes and constraints.                             |
 | [`docs/postgresql-schema.sql`](docs/postgresql-schema.sql)       | Portable PostgreSQL domain-model reference.                             |
-| [`docs/landing-verification.md`](docs/landing-verification.md)   | Landing-page responsive and keyboard-accessibility verification record. |
-| [`client/src/pages/Terms.tsx`](client/src/pages/Terms.tsx)       | Draft public Terms of Service displayed at `/terms`.                    |
+| [`docs/landing-verification.md`](docs/landing-verification.md) | Landing-page responsive and keyboard-accessibility verification record. |
+| [`docs/privacy-contact-verification.md`](docs/privacy-contact-verification.md) | Cookie-consent, public contact-request, and privacy-route verification record. |
+| [`client/src/pages/Terms.tsx`](client/src/pages/Terms.tsx) | Draft public Terms of Service displayed at `/terms`. |
 | [`client/src/pages/Privacy.tsx`](client/src/pages/Privacy.tsx)   | Draft public Privacy Policy displayed at `/privacy`.                    |
 
 ## Security and support
@@ -211,6 +212,6 @@ Keep repository access restricted, do not commit secrets, rotate exposed credent
 
 ## License
 
-This repository is distributed under the proprietary **MetrcMatch Private-Use License**. It is not open source. Review [`LICENSE`](LICENSE) before accessing, copying, modifying, or distributing any part of the project. The public Terms of Service and Privacy Policy are available in the application at `/terms` and `/privacy`; both are draft documents that require legal-entity, contact, jurisdiction, retention, and compliance review before public launch.
+This repository is distributed under the proprietary **MetrcMatch Private-Use License**. It is not open source. Review [`LICENSE`](LICENSE) before accessing, copying, modifying, or distributing any part of the project. The public Terms of Service and Privacy Policy are available at `/terms` and `/privacy`, with privacy requests and general inquiries at `/contact`. The documents identify **Rocky Hayes** as the contact at [hayesrocky64@gmail.com](mailto:hayesrocky64@gmail.com) and remain drafts for qualified counsel review before public launch.
 
 Copyright © 2026 MetrcMatch. All rights reserved.
