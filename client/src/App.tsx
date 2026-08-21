@@ -21,6 +21,7 @@ const Billing = lazy(() => import("./pages/Billing"));
 const Terms = lazy(() => import("./pages/Terms"));
 const Privacy = lazy(() => import("./pages/Privacy"));
 const Contact = lazy(() => import("./pages/Contact"));
+const AdminContactRequests = lazy(() => import("./pages/AdminContactRequests"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 function PageFallback() {
@@ -125,6 +126,11 @@ function Router() {
         <Suspense fallback={<PageFallback />}>
           <Contact />
         </Suspense>
+      </Route>
+      <Route path="/admin/contact-requests">
+        <AuthenticatedPage>
+          <AdminContactRequests />
+        </AuthenticatedPage>
       </Route>
       <Route path="/workspace">
         <ProtectedPage>

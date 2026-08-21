@@ -28,6 +28,7 @@ import {
   ClipboardCheck,
   CreditCard,
   FileText,
+  Inbox,
   LayoutDashboard,
   LogOut,
   PanelLeft,
@@ -46,6 +47,12 @@ const allMenuItems = [
   { icon: Settings, label: "Facility & Metrc", path: "/settings" },
   { icon: CreditCard, label: "Billing", path: "/billing" },
 ];
+
+const adminMenuItem = {
+  icon: Inbox,
+  label: "Contact requests",
+  path: "/admin/contact-requests",
+};
 
 const SIDEBAR_WIDTH_KEY = "metrcmatch-sidebar-width";
 const DEFAULT_WIDTH = 276;
@@ -138,7 +145,9 @@ function DashboardLayoutContent({
   const menuItems =
     memberRole === "staff"
       ? allMenuItems.filter(item => item.path === "/logs")
-      : allMenuItems;
+      : user?.isOwner
+        ? [...allMenuItems, adminMenuItem]
+        : allMenuItems;
   const activeMenuItem = menuItems.find(item => item.path === location);
 
   useEffect(() => {

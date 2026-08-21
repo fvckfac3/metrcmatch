@@ -42,6 +42,23 @@ async function main() {
   const pending = new Map();
   socket.addEventListener("message", event => {
     const payload = JSON.parse(event.data);
+    if (payload.method === "Fetch.requestPaused") {
+      socket.send(
+        JSON.stringify({
+          id: (requestId += 1),
+          method: "Fetch.fulfillRequest",
+          params: {
+            requestId: payload.params.requestId,
+            responseCode: 201,
+            responseHeaders: [
+              { name: "Content-Type", value: "application/json" },
+            ],
+            body: btoa(JSON.stringify({ received: true, id: 991 })),
+          },
+        })
+      );
+      return;
+    }
     const resolver = pending.get(payload.id);
     if (!resolver) return;
     pending.delete(payload.id);
@@ -99,8 +116,38 @@ async function main() {
     throw new Error(
       `Contact request surface did not render as expected: ${JSON.stringify(contactSurface)}`
     );
+  await command("Fetch.enable", {
+    patterns: [{ urlPattern: "*/api/contact", requestStage: "Request" }],
+  });
+  await evaluate(`(() => {
+    const set = (selector, value) => {
+      const element = document.querySelector(selector);
+      const prototype = element instanceof HTMLTextAreaElement
+        ? HTMLTextAreaElement.prototype
+        : HTMLInputElement.prototype;
+      Object.getOwnPropertyDescriptor(prototype, 'value').set.call(element, value);
+      element.dispatchEvent(new Event('input', { bubbles: true }));
+    };
+    set('#email', 'verify@example.com');
+    set('#message', 'Please confirm the animated contact receipt in this isolated browser test.');
+    document.querySelector('input[type=checkbox]').click();
+    document.querySelector('form').requestSubmit();
+  })()`);
+  await wait(450);
+  const success = await evaluate(`(() => ({
+    displayed: Boolean(document.querySelector('.contact-success-reveal')),
+    text: document.querySelector('[role=status]')?.textContent?.replace(/\\s+/g, ' ').trim(),
+    focused: document.activeElement?.textContent?.trim()
+  }))()`);
+  if (
+    !success.displayed ||
+    !success.text?.includes("Request #991 was received")
+  )
+    throw new Error(
+      `Animated success receipt did not render as expected: ${JSON.stringify(success)}`
+    );
   console.log(
-    "Verified cookie consent persistence and public contact surface."
+    "Verified cookie consent, public contact, and animated success receipt flows."
   );
   socket.close();
 }

@@ -689,6 +689,49 @@ export async function createContactRequest(input: {
   return getInsertId(result);
 }
 
+export async function listContactRequests(
+  status?: "new" | "in_review" | "closed"
+) {
+  const database = await requireDb();
+  if (status)
+    return database
+      .select()
+      .from(contactRequests)
+      .where(eq(contactRequests.status, status))
+      .orderBy(desc(contactRequests.createdAt));
+  return database
+    .select()
+    .from(contactRequests)
+    .orderBy(desc(contactRequests.createdAt));
+}
+
+export async function getContactRequest(id: number) {
+  const database = await requireDb();
+  return (
+    (
+      await database
+        .select()
+        .from(contactRequests)
+        .where(eq(contactRequests.id, id))
+        .limit(1)
+    )[0] ?? null
+  );
+}
+
+export async function updateContactRequestStatus(
+  id: number,
+  status: "new" | "in_review" | "closed"
+) {
+  const existing = await getContactRequest(id);
+  if (!existing) return null;
+  const database = await requireDb();
+  await database
+    .update(contactRequests)
+    .set({ status })
+    .where(eq(contactRequests.id, id));
+  return { ...existing, status };
+}
+
 export async function updateNotificationStatus(
   id: number,
   status: "sent" | "failed" | "suppressed"

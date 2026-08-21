@@ -1,5 +1,5 @@
 import { ArrowLeft, CheckCircle2, Mail, Send } from "lucide-react";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { Link } from "wouter";
 
 type RequestType = "privacy" | "general";
@@ -18,7 +18,12 @@ export default function Contact() {
   const [form, setForm] = useState(initialForm);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [submitted, setSubmitted] = useState(false);
+  const [receipt, setReceipt] = useState<{ id: number } | null>(null);
+  const successHeadingRef = useRef<HTMLHeadingElement>(null);
+
+  useEffect(() => {
+    if (receipt) successHeadingRef.current?.focus();
+  }, [receipt]);
 
   const update = <K extends keyof typeof initialForm>(
     key: K,
@@ -37,10 +42,16 @@ export default function Contact() {
       });
       const data = (await response.json().catch(() => ({}))) as {
         error?: string;
+        id?: number;
       };
       if (!response.ok)
         throw new Error(data.error ?? "Unable to submit your request.");
-      setSubmitted(true);
+      const requestId = data.id;
+      if (typeof requestId !== "number" || !Number.isSafeInteger(requestId))
+        throw new Error(
+          "Your request was received but no reference was returned."
+        );
+      setReceipt({ id: requestId });
       setForm(initialForm);
     } catch (cause) {
       setError(
@@ -98,16 +109,35 @@ export default function Contact() {
         </section>
 
         <section className="rounded-[2rem] border border-[#d3e1d2] bg-white/90 p-6 shadow-[0_20px_45px_rgba(23,63,58,0.06)] sm:p-9">
-          {submitted ? (
-            <div className="py-10 text-center">
-              <CheckCircle2 className="mx-auto h-12 w-12 text-[#356e45]" />
-              <h2 className="mt-5 text-2xl font-bold">Request received</h2>
+          {receipt ? (
+            <div
+              role="status"
+              aria-live="polite"
+              className="contact-success-reveal py-10 text-center"
+            >
+              <div className="contact-success-orbit relative mx-auto grid h-20 w-20 place-items-center rounded-full bg-[#e6f4e5] text-[#356e45]">
+                <span
+                  aria-hidden
+                  className="absolute inset-0 rounded-full border-2 border-[#78a77b]/45"
+                />
+                <CheckCircle2 className="relative h-11 w-11" />
+              </div>
+              <p className="mono-meta mt-6 text-[11px] font-bold uppercase tracking-[0.14em] text-[#5e8b62]">
+                Submission complete
+              </p>
+              <h2
+                ref={successHeadingRef}
+                tabIndex={-1}
+                className="mt-2 text-2xl font-bold outline-none"
+              >
+                Your request is safely in the queue.
+              </h2>
               <p className="mx-auto mt-3 max-w-sm text-sm leading-6 text-[#61766a]">
-                Thank you. Rocky Hayes will use the contact details you provided
-                to respond to your request.
+                Request #{receipt.id} was received. Rocky Hayes will use the
+                contact details you provided to respond.
               </p>
               <button
-                onClick={() => setSubmitted(false)}
+                onClick={() => setReceipt(null)}
                 className="mt-7 rounded-xl bg-[#173f3a] px-4 py-2.5 text-sm font-bold text-white hover:bg-[#0e2f2b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5e8b62]"
               >
                 Submit another request

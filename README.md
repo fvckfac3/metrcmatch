@@ -195,16 +195,16 @@ After release, perform a controlled operational validation:
 
 ## Documentation
 
-| Document                                                         | Description                                                             |
-| ---------------------------------------------------------------- | ----------------------------------------------------------------------- |
-| [`docs/api-contract.md`](docs/api-contract.md)                   | REST request and response contract.                                     |
-| [`docs/environment-reference.md`](docs/environment-reference.md) | Managed runtime variables and Stripe webhook configuration.             |
-| [`docs/integration-research.md`](docs/integration-research.md)   | External integration notes and constraints.                             |
-| [`docs/postgresql-schema.sql`](docs/postgresql-schema.sql)       | Portable PostgreSQL domain-model reference.                             |
-| [`docs/landing-verification.md`](docs/landing-verification.md) | Landing-page responsive and keyboard-accessibility verification record. |
+| Document                                                                       | Description                                                                    |
+| ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------ |
+| [`docs/api-contract.md`](docs/api-contract.md)                                 | REST request and response contract.                                            |
+| [`docs/environment-reference.md`](docs/environment-reference.md)               | Managed runtime variables and Stripe webhook configuration.                    |
+| [`docs/integration-research.md`](docs/integration-research.md)                 | External integration notes and constraints.                                    |
+| [`docs/postgresql-schema.sql`](docs/postgresql-schema.sql)                     | Portable PostgreSQL domain-model reference.                                    |
+| [`docs/landing-verification.md`](docs/landing-verification.md)                 | Landing-page responsive and keyboard-accessibility verification record.        |
 | [`docs/privacy-contact-verification.md`](docs/privacy-contact-verification.md) | Cookie-consent, public contact-request, and privacy-route verification record. |
-| [`client/src/pages/Terms.tsx`](client/src/pages/Terms.tsx) | Draft public Terms of Service displayed at `/terms`. |
-| [`client/src/pages/Privacy.tsx`](client/src/pages/Privacy.tsx)   | Draft public Privacy Policy displayed at `/privacy`.                    |
+| [`client/src/pages/Terms.tsx`](client/src/pages/Terms.tsx)                     | Draft public Terms of Service displayed at `/terms`.                           |
+| [`client/src/pages/Privacy.tsx`](client/src/pages/Privacy.tsx)                 | Draft public Privacy Policy displayed at `/privacy`.                           |
 
 ## Security and support
 
