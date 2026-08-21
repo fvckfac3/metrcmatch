@@ -130,3 +130,13 @@
 - [x] Create and save a concise visual identity specification covering the logo system, wordmark/typeset rules, palette, and asset usage.
 - [x] Verify the generated primary brand asset has completed successfully and record its final managed asset URL.
 - [x] Integrate and visually validate the completed supporting assets in the landing/workspace, or document the approved primary-mark-only release decision.
+- [x] Produce optimized MetrcMatch favicon and app-icon exports for common browser, iOS, Android, and app-store contexts.
+- [x] Create a social-sharing Open Graph brand card and connect the relevant social metadata to the public experience.
+- [x] Add the reviewed reconciliation support illustration to a clear onboarding stage without disrupting operational workflows.
+- [x] Validate the visual assets and onboarding behavior, then publish and synchronize the update.
+- [ ] Save a checkpoint for the completed icon-export, Open Graph, and illustrated onboarding update.
+- [ ] Push the validated visual-enhancement update to the private GitHub repository and confirm the remote sync.
+- [x] Verify the onboarding illustration file completed successfully and visually confirm it renders inside the authenticated Settings onboarding panel.
+- [x] Re-run a targeted authenticated visual check for the Settings onboarding section after the illustration is confirmed live.
+- [x] Run a deterministic authenticated browser verification proving the Settings onboarding panel and its reconciliation illustration render for the configured owner.
+- [x] Record explicit assertion evidence for the illustrated Settings onboarding panel before final publication.

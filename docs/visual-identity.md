@@ -27,12 +27,27 @@ The primary mark is a rounded shield that combines a verification check with a l
 
 ## Managed Assets
 
-| Asset                           | Managed URL                                                  | Intended use                                                                                                     |
-| ------------------------------- | ------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------- |
-| Primary reconciliation mark     | `/manus-storage/metrcmatch-app-icon_b5732b20.png`            | Browser icon, public lockup, authenticated navigation. Final opaque production asset.                            |
-| Exploratory transparent variant | `/manus-storage/metrcmatch-brand-mark_e8d2d237.png`          | Retained as an exploration artifact only; do not ship because it contains a visible matte fringe at large scale. |
-| Reconciliation illustration     | `/manus-storage/metrcmatch-reconciliation-hero_ff9d09a4.png` | Optional landing or onboarding visual after final visual approval.                                               |
-| Audit-ready support icon        | `/manus-storage/metrcmatch-audit-ready-icon_4b216ab5.png`    | Optional audit status and reporting accent after final visual approval.                                          |
+| Asset                            | Managed URL                                                        | Intended use                                                                                                     |
+| -------------------------------- | ------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------- |
+| Primary reconciliation mark      | `/manus-storage/metrcmatch-app-icon_b5732b20.png`                  | Browser icon, public lockup, authenticated navigation. Final opaque production asset.                            |
+| Exploratory transparent variant  | `/manus-storage/metrcmatch-brand-mark_e8d2d237.png`                | Retained as an exploration artifact only; do not ship because it contains a visible matte fringe at large scale. |
+| Reviewed onboarding illustration | `/manus-storage/metrcmatch-onboarding-reconciliation_8b9db974.png` | Active in the Facility & Metrc onboarding panel to reinforce the connect, reconcile, verify journey.             |
+| Social-sharing card              | `/manus-storage/metrcmatch-open-graph-card_b35d2757.png`           | Open Graph and X/Twitter large-image preview for public links.                                                   |
+| Audit-ready support icon         | `/manus-storage/metrcmatch-audit-ready-icon_4b216ab5.png`          | Optional audit status and reporting accent after final visual approval.                                          |
+
+## Icon Export Set
+
+The production mark has been deterministically exported for common browser, iOS, Android, and store contexts. The web application references the favicon, Apple touch icon, and web manifest variants directly; the complete PNG bundle is available at `/manus-storage/metrcmatch-icon-export-set_a9fdfbbd.zip`.
+
+| Export target    |    Dimensions | Managed URL                                                   |
+| ---------------- | ------------: | ------------------------------------------------------------- |
+| Browser favicon  |       16 × 16 | `/manus-storage/metrcmatch-favicon-16_01ea0cc4.png`           |
+| Browser favicon  |       32 × 32 | `/manus-storage/metrcmatch-favicon-32_3a811441.png`           |
+| Browser favicon  |       48 × 48 | `/manus-storage/metrcmatch-favicon-48_2dcb821d.png`           |
+| Apple touch icon |     180 × 180 | `/manus-storage/metrcmatch-apple-touch-icon-180_7b2bdc14.png` |
+| Android/PWA icon |     192 × 192 | `/manus-storage/metrcmatch-android-chrome-192_15e6dc47.png`   |
+| Android/PWA icon |     512 × 512 | `/manus-storage/metrcmatch-android-chrome-512_44dfad61.png`   |
+| App-store source | 1,024 × 1,024 | `/manus-storage/metrcmatch-app-store-1024_3a7015c0.png`       |
 
 ## Implementation Notes
 
@@ -40,4 +55,4 @@ The reusable `BrandLockup` and `BrandMark` components centralize production use 
 
 ## Approved Release Scope
 
-The current release ships the verified primary reconciliation mark, browser icon, accessible HTML wordmark, descriptor, and shared palette. The reconciliation illustration and audit-ready support icon remain catalogued but are **not** embedded in live controls until their generated files finish and pass the same lightweight review. This prevents a provisional or placeholder asset from interrupting compliance workflows while retaining the planned asset set for a subsequent visual-polish update.
+The current release ships the verified primary reconciliation mark, multi-device browser and app icons, accessible HTML wordmark, descriptor, social-sharing metadata, and shared palette. The reviewed reconciliation illustration is active in the Facility & Metrc onboarding panel, while the audit-ready support icon remains catalogued but is **not** embedded in live controls until it passes the same lightweight review. This keeps the visual system helpful without interrupting compliance workflows.

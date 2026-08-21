@@ -20,6 +20,9 @@ import { toast } from "sonner";
 
 type AuthMethod = "api_key" | "oauth";
 
+const ONBOARDING_RECONCILIATION_ILLUSTRATION_URL =
+  "/manus-storage/metrcmatch-onboarding-reconciliation_8b9db974.png";
+
 export default function Settings() {
   const utils = trpc.useUtils();
   const facility = trpc.facility.current.useQuery();
@@ -494,67 +497,78 @@ export default function Settings() {
       </div>
       <Card className="surface-lift motion-rise motion-delay-3 border-[#dce3da] bg-[#eaf3e9] shadow-[0_12px_28px_rgba(18,53,47,0.04)]">
         <CardContent className="p-5 sm:p-6">
-          <div className="flex items-start gap-3">
-            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white text-[#356e45]">
-              <BookOpen className="h-5 w-5" />
-            </span>
-            <div>
-              <h2 className="text-lg font-semibold text-[#173f3a]">
-                Oregon OLCC onboarding
-              </h2>
-              <p className="mt-1 text-sm leading-6 text-[#61706b]">
-                Use MetrcMatch as a reconciliation workpaper: connect the
-                facility, sync Metrc records, log physical reality, review
-                variances, and retain a prepared report. MetrcMatch flags a
-                variance when it exceeds 5 units or 5%; it labels greater than
-                20% as Critical, greater than 10% as High, and lesser than 10%
-                as Medium. These are application review thresholds, not a
-                substitute for current OLCC requirements; verify official
-                guidance before acting.
-              </p>
-              <div className="mt-4 grid gap-3 sm:grid-cols-3">
-                <div className="rounded-xl bg-white/80 p-3">
-                  <p className="text-xs font-bold text-[#173f3a]">
-                    1 · Identify
-                  </p>
-                  <p className="mt-1 text-xs leading-5 text-[#61706b]">
-                    Save the facility name and OLCC license number.
-                  </p>
+          <div className="grid items-center gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(235px,0.34fr)]">
+            <div className="flex items-start gap-3">
+              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white text-[#356e45]">
+                <BookOpen className="h-5 w-5" />
+              </span>
+              <div>
+                <h2 className="text-lg font-semibold text-[#173f3a]">
+                  Oregon OLCC onboarding
+                </h2>
+                <p className="mt-1 text-sm leading-6 text-[#61706b]">
+                  Use MetrcMatch as a reconciliation workpaper: connect the
+                  facility, sync Metrc records, log physical reality, review
+                  variances, and retain a prepared report. MetrcMatch flags a
+                  variance when it exceeds 5 units or 5%; it labels greater than
+                  20% as Critical, greater than 10% as High, and lesser than 10%
+                  as Medium. These are application review thresholds, not a
+                  substitute for current OLCC requirements; verify official
+                  guidance before acting.
+                </p>
+                <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                  <div className="rounded-xl bg-white/80 p-3">
+                    <p className="text-xs font-bold text-[#173f3a]">
+                      1 · Identify
+                    </p>
+                    <p className="mt-1 text-xs leading-5 text-[#61706b]">
+                      Save the facility name and OLCC license number.
+                    </p>
+                  </div>
+                  <div className="rounded-xl bg-white/80 p-3">
+                    <p className="text-xs font-bold text-[#173f3a]">
+                      2 · Reconcile
+                    </p>
+                    <p className="mt-1 text-xs leading-5 text-[#61706b]">
+                      Sync Metrc and record counts, losses, and lab outcomes.
+                    </p>
+                  </div>
+                  <div className="rounded-xl bg-white/80 p-3">
+                    <p className="text-xs font-bold text-[#173f3a]">
+                      3 · Verify
+                    </p>
+                    <p className="mt-1 text-xs leading-5 text-[#61706b]">
+                      Review flagged variances and prepare an evidence report.
+                    </p>
+                  </div>
                 </div>
-                <div className="rounded-xl bg-white/80 p-3">
-                  <p className="text-xs font-bold text-[#173f3a]">
-                    2 · Reconcile
-                  </p>
-                  <p className="mt-1 text-xs leading-5 text-[#61706b]">
-                    Sync Metrc and record counts, losses, and lab outcomes.
-                  </p>
-                </div>
-                <div className="rounded-xl bg-white/80 p-3">
-                  <p className="text-xs font-bold text-[#173f3a]">3 · Verify</p>
-                  <p className="mt-1 text-xs leading-5 text-[#61706b]">
-                    Review flagged variances and prepare an evidence report.
-                  </p>
+                <div className="mt-4 flex flex-wrap gap-3 text-xs font-semibold">
+                  <a
+                    href="https://www.oregon.gov/olcc/pages/ommp_cts_guide.aspx"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1.5 text-[#205b35] underline-offset-4 hover:underline"
+                  >
+                    OLCC CTS guide <ExternalLink className="h-3.5 w-3.5" />
+                  </a>
+                  <a
+                    href="https://www.oregon.gov/olcc/marijuana/pages/default.aspx"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1.5 text-[#205b35] underline-offset-4 hover:underline"
+                  >
+                    OLCC marijuana resources{" "}
+                    <ExternalLink className="h-3.5 w-3.5" />
+                  </a>
                 </div>
               </div>
-              <div className="mt-4 flex flex-wrap gap-3 text-xs font-semibold">
-                <a
-                  href="https://www.oregon.gov/olcc/pages/ommp_cts_guide.aspx"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center gap-1.5 text-[#205b35] underline-offset-4 hover:underline"
-                >
-                  OLCC CTS guide <ExternalLink className="h-3.5 w-3.5" />
-                </a>
-                <a
-                  href="https://www.oregon.gov/olcc/marijuana/pages/default.aspx"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center gap-1.5 text-[#205b35] underline-offset-4 hover:underline"
-                >
-                  OLCC marijuana resources{" "}
-                  <ExternalLink className="h-3.5 w-3.5" />
-                </a>
-              </div>
+            </div>
+            <div className="relative hidden overflow-hidden rounded-2xl border border-white/80 bg-[#f8fbf6] p-2 shadow-[0_12px_24px_rgba(18,53,47,0.08)] lg:block">
+              <img
+                src={ONBOARDING_RECONCILIATION_ILLUSTRATION_URL}
+                alt="Abstract illustration of package records resolving into verified reconciliation evidence."
+                className="aspect-[4/3] w-full rounded-xl object-cover"
+              />
             </div>
           </div>
         </CardContent>

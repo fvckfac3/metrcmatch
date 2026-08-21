@@ -176,8 +176,28 @@ async function main() {
     throw new Error(
       `Configured owner workspace verification failed: ${JSON.stringify(workspace)}`
     );
+  await command("Page.navigate", { url: `${baseUrl}/settings` });
+  await wait(1_200);
+  const settingsOnboarding = await evaluate(`(() => ({
+    path: window.location.pathname,
+    title: document.querySelector('h1')?.textContent?.trim(),
+    onboardingHeading: [...document.querySelectorAll('h2')].some(node => node.textContent?.trim() === 'Oregon OLCC onboarding'),
+    illustration: Boolean(document.querySelector('img[src*="metrcmatch-onboarding-reconciliation_8b9db974.png"]')),
+    illustrationAlt: document.querySelector('img[src*="metrcmatch-onboarding-reconciliation_8b9db974.png"]')?.getAttribute('alt')
+  }))()`);
+  if (
+    settingsOnboarding?.path !== "/settings" ||
+    settingsOnboarding?.title !== "Facility & Metrc" ||
+    !settingsOnboarding?.onboardingHeading ||
+    !settingsOnboarding?.illustration ||
+    settingsOnboarding?.illustrationAlt !==
+      "Abstract illustration of package records resolving into verified reconciliation evidence."
+  )
+    throw new Error(
+      `Settings onboarding illustration verification failed: ${JSON.stringify(settingsOnboarding)}`
+    );
   console.log(
-    "Verified authenticated owner inbox, notification composer, and direct workspace access without a subscription redirect."
+    "Verified authenticated owner inbox, notification composer, direct workspace access, and illustrated Settings onboarding without a subscription redirect."
   );
   socket.close();
 }
